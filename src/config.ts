@@ -1,7 +1,10 @@
 export default class Config {
   private _canvasWidth: number;
   private _canvasHeight: number;
-  private _cellSize: number;
+  private _rows: number;
+  private _columns: number;
+  private _cellWidth: number;
+  private _cellHeight: number;
   private _cellColor: string;
   private _frameDelay: number;
 
@@ -9,8 +12,11 @@ export default class Config {
     this._canvasWidth = parseInt(params.canvasWidth, 10) || 800;
     this._canvasHeight = parseInt(params.canvasHeight, 10) || 800;
 
-    this._cellSize = parseInt(params.cellSize) || 10;
-    this._cellColor = params.cellColor;
+    this._rows = parseInt(params.rows) || 10;
+    this._columns = parseInt(params.columns) || 10;
+    this._cellWidth = Math.floor(this._canvasWidth / this._columns);
+    this._cellHeight = Math.floor(this._canvasHeight / this._rows);
+    this._cellColor = params.cellColor || '#ffffff';
     this._frameDelay = parseInt(params.frameDelay) || 0;
 
     if (this._cellColor && !this._cellColor.startsWith('#')) {
@@ -26,8 +32,20 @@ export default class Config {
     return this._canvasHeight;
   }
 
-  get cellSize() {
-    return this._cellSize;
+  get rows() {
+    return this._rows;
+  }
+
+  get columns() {
+    return this._columns;
+  }
+
+  get cellWidth() {
+    return this._cellWidth;
+  }
+
+  get cellHeight() {
+    return this._cellHeight;
   }
 
   get cellColor() {
