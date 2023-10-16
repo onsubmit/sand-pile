@@ -6,6 +6,8 @@ export default class Config {
   private _cellWidth: number;
   private _cellHeight: number;
   private _cellColor: string;
+  private _cellBackgroundColor: string;
+  private _maxStackSize: number;
   private _frameDelay: number;
 
   constructor(params: { [key: string]: string }) {
@@ -17,6 +19,8 @@ export default class Config {
     this._cellWidth = Math.floor(this._canvasWidth / this._columns);
     this._cellHeight = Math.floor(this._canvasHeight / this._rows);
     this._cellColor = params.cellColor || '#ffffff';
+    this._cellBackgroundColor = params.cellBackgroundColor || '#242424';
+    this._maxStackSize = parseInt(params.maxStackSize) || 4;
     this._frameDelay = parseInt(params.frameDelay) || 0;
 
     if (this._cellColor && !this._cellColor.startsWith('#')) {
@@ -50,6 +54,14 @@ export default class Config {
 
   get cellColor() {
     return this._cellColor;
+  }
+
+  get cellBackgroundColor() {
+    return this._cellBackgroundColor;
+  }
+
+  get maxStackSize() {
+    return this._maxStackSize;
   }
 
   get frameDelay() {
