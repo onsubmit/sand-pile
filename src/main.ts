@@ -50,7 +50,7 @@ const draw = (x: number, y: number, increment: boolean, force = false) => {
   const row = y / config.cellHeight;
   const column = x / config.cellWidth;
 
-  const newValue = increment ? grid.increment(row, column) : grid.decrement(row, column);
+  const newValue = increment ? grid.incrementOrThrow(row, column) : grid.decrementOrThrow(row, column);
   const newCellColor = blend(cellBackgroundColor, cellColor, newValue / config.maxStackSize);
   context.fillStyle = newCellColor;
   context.fillRect(x, y, config.cellWidth, config.cellHeight);
