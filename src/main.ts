@@ -23,13 +23,25 @@ canvas.height = config.canvasHeight;
 context.fillStyle = config.cellColor;
 context.font = `${config.cellWidth / 4}px arial`;
 
+const drawAtCoordinate = (row: number, column: number, value: number) => {
+  const newCellColor = blend(cellBackgroundColor, cellColor, value / config.maxStackSize);
+  context.fillStyle = newCellColor.color;
+
+  const x = column * config.cellWidth;
+  const y = row * config.cellHeight;
+  context.fillRect(x, y, config.cellWidth, config.cellHeight);
+  context.fillStyle = newCellColor.accessibleColor;
+  context.fillText(`${value}`, x + 4, y + config.cellHeight / 4);
+};
+
 const grid = new Grid(
   config.canvasHeight / config.cellHeight,
   config.canvasWidth / config.cellWidth,
-  config.maxStackSize
+  config.maxStackSize,
+  drawAtCoordinate
 );
 
-const draw = (x: number, y: number, increment: boolean, force = false) => {
+const drawAtMouse = (x: number, y: number, increment: boolean, force = false) => {
   if (config.cellWidth > 1) {
     x = Math.floor(x / config.cellWidth) * config.cellWidth;
   }
@@ -48,12 +60,11 @@ const draw = (x: number, y: number, increment: boolean, force = false) => {
   const row = y / config.cellHeight;
   const column = x / config.cellWidth;
 
-  const newValue = increment ? grid.incrementOrThrow(row, column) : grid.decrementOrThrow(row, column);
-  const newCellColor = blend(cellBackgroundColor, cellColor, newValue / config.maxStackSize);
-  context.fillStyle = newCellColor.color;
-  context.fillRect(x, y, config.cellWidth, config.cellHeight);
-  context.fillStyle = newCellColor.accessibleColor;
-  context.fillText(`${newValue}`, x + 4, y + config.cellHeight / 4);
+  if (increment) {
+    grid.incrementOrThrow(row, column);
+  } else {
+    grid.decrementOrThrow(row, column);
+  }
 };
 
 const clear = (x: number, y: number) => {
@@ -85,9 +96,9 @@ canvas.onmousedown = (e: MouseEvent) => {
   if (isRightClick) {
     clear(x, y);
   } else if (isMiddleClick) {
-    draw(x, y, false, true);
+    drawAtMouse(x, y, false, true);
   } else {
-    draw(x, y, true, true);
+    drawAtMouse(x, y, true, true);
   }
 };
 
@@ -102,9 +113,9 @@ canvas.onmousemove = (e: MouseEvent) => {
     if (isRightClick) {
       clear(x, y);
     } else if (isMiddleClick) {
-      draw(x, y, false);
+      drawAtMouse(x, y, false);
     } else {
-      draw(x, y, true);
+      drawAtMouse(x, y, true);
     }
   }
 };

@@ -1,8 +1,11 @@
+export type DrawCallback = (row: number, column: number, value: number) => void;
+
 export default class Grid {
   private _rows: number;
   private _columns: number;
   private _grid: number[][];
   private _maxValue: number;
+  private _drawCallback: DrawCallback;
 
   private static readonly directions = [
     [-1, -1],
@@ -15,11 +18,12 @@ export default class Grid {
     [1, -1],
   ] as const;
 
-  constructor(rows: number, columns: number, maxValue: number) {
+  constructor(rows: number, columns: number, maxValue: number, drawCallback: DrawCallback) {
     this._rows = rows;
     this._columns = columns;
     this._grid = Array.from(Array(rows), () => Array.from(Array(columns), () => 0));
     this._maxValue = maxValue;
+    this._drawCallback = drawCallback;
   }
 
   decrementOrThrow = (row: number, column: number, amount = 1): number => {
@@ -30,6 +34,7 @@ export default class Grid {
 
     const newValue = element - amount;
     this._grid[row]![column] = newValue;
+    this._drawCallback(row, column, newValue);
 
     return newValue;
   };
@@ -60,6 +65,7 @@ export default class Grid {
 
     const newValue = element + amount;
     this._grid[row]![column] = newValue;
+    this._drawCallback(row, column, newValue);
 
     return newValue;
   };
@@ -68,10 +74,13 @@ export default class Grid {
     let coordinatesRequiringAvalanche = new Set<string>();
     for (let row = 0; row < this._rows; row++) {
       for (let column = 0; column < this._columns; column++) {
-        if (this.getValueOrThrow(row, column) >= this._maxValue) {
+        if (
+          !coordinatesRequiringAvalanche.has(`${row},${column}`) &&
+          this.getValueOrThrow(row, column) >= this._maxValue
+        ) {
           coordinatesRequiringAvalanche = new Set([
             ...coordinatesRequiringAvalanche,
-            ...this.avalanceAtCoordinate(row, column),
+            ...this.avalancheAtCoordinate(row, column),
           ]);
         }
       }
@@ -82,12 +91,12 @@ export default class Grid {
     }
   };
 
-  avalanceAtCoordinate = (row: number, column: number): Set<string> => {
+  avalancheAtCoordinate = (row: number, column: number): Set<string> => {
     const cardinalBorderCoordinates = [
       [row - 1, column],
+      [row, column + 1],
       [row + 1, column],
       [row, column - 1],
-      [row, column + 1],
     ] as const;
 
     let coordinatesRequiringAvalanche = new Set<string>();
@@ -95,14 +104,13 @@ export default class Grid {
       const [cellRow, cellColumn] = coordinates;
 
       const newValue = this.increment(cellRow, cellColumn);
-      if (newValue && newValue >= this._maxValue) {
-        coordinatesRequiringAvalanche.add(`${cellRow},${cellColumn}`);
-      }
-    }
+      if (newValue !== undefined) {
+        this.decrementOrThrow(row, column);
 
-    const originValue = this.getValue(row, column);
-    if (originValue && originValue >= this._maxValue) {
-      coordinatesRequiringAvalanche.add(`${row},${column}`);
+        if (newValue >= this._maxValue) {
+          coordinatesRequiringAvalanche.add(`${cellRow},${cellColumn}`);
+        }
+      }
     }
 
     return coordinatesRequiringAvalanche;
@@ -118,13 +126,9 @@ export default class Grid {
     });
 
     for (const { row, column } of coordinateNums) {
-      this.decrementOrThrow(row, column, this._maxValue);
-    }
-
-    for (const { row, column } of coordinateNums) {
       coordinatesRequiringAvalanche = new Set([
         ...coordinatesRequiringAvalanche,
-        ...this.avalanceAtCoordinate(row, column),
+        ...this.avalancheAtCoordinate(row, column),
       ]);
     }
 
@@ -171,6 +175,7 @@ export default class Grid {
     }
 
     gridRow[column] = value;
+    this._drawCallback(row, column, value);
   };
 
   private getValueOrThrow = (row: number, column: number): number => {
@@ -198,5 +203,6 @@ export default class Grid {
     }
 
     gridRow[column] = value;
+    this._drawCallback(row, column, value);
   };
 }
