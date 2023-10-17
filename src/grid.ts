@@ -22,13 +22,13 @@ export default class Grid {
     this._maxValue = maxValue;
   }
 
-  decrementOrThrow = (row: number, column: number): number => {
+  decrementOrThrow = (row: number, column: number, amount = 1): number => {
     const element = this.getValueOrThrow(row, column);
     if (element === 0) {
       return 0;
     }
 
-    const newValue = element - 1;
+    const newValue = element - amount;
     this._grid[row]![column] = newValue;
 
     return newValue;
@@ -51,17 +51,84 @@ export default class Grid {
     return newValue;
   };
 
-  incrementOrThrow = (row: number, column: number): number => {
+  incrementOrThrow = (row: number, column: number, amount = 1): number => {
     const element = this.getValueOrThrow(row, column);
 
     if (element === this._maxValue) {
       return this._maxValue;
     }
 
-    const newValue = element + 1;
+    const newValue = element + amount;
     this._grid[row]![column] = newValue;
 
     return newValue;
+  };
+
+  startAvalanche = () => {
+    let coordinatesRequiringAvalanche = new Set<string>();
+    for (let row = 0; row < this._rows; row++) {
+      for (let column = 0; column < this._columns; column++) {
+        if (this.getValueOrThrow(row, column) >= this._maxValue) {
+          coordinatesRequiringAvalanche = new Set([
+            ...coordinatesRequiringAvalanche,
+            ...this.avalanceAtCoordinate(row, column),
+          ]);
+        }
+      }
+    }
+
+    while (coordinatesRequiringAvalanche.size) {
+      coordinatesRequiringAvalanche = this.avalancheAtCoordinates(coordinatesRequiringAvalanche);
+    }
+  };
+
+  avalanceAtCoordinate = (row: number, column: number): Set<string> => {
+    const cardinalBorderCoordinates = [
+      [row - 1, column],
+      [row + 1, column],
+      [row, column - 1],
+      [row, column + 1],
+    ] as const;
+
+    let coordinatesRequiringAvalanche = new Set<string>();
+    for (const coordinates of cardinalBorderCoordinates) {
+      const [cellRow, cellColumn] = coordinates;
+
+      const newValue = this.increment(cellRow, cellColumn);
+      if (newValue && newValue >= this._maxValue) {
+        coordinatesRequiringAvalanche.add(`${cellRow},${cellColumn}`);
+      }
+    }
+
+    const originValue = this.getValue(row, column);
+    if (originValue && originValue >= this._maxValue) {
+      coordinatesRequiringAvalanche.add(`${row},${column}`);
+    }
+
+    return coordinatesRequiringAvalanche;
+  };
+
+  avalancheAtCoordinates = (coordinates: Set<string>): Set<string> => {
+    let coordinatesRequiringAvalanche = new Set<string>();
+    const coordinateNums = [...coordinates].map((c) => {
+      const split = c.split(',');
+      const row = parseInt(split[0]!, 10);
+      const column = parseInt(split[1]!, 10);
+      return { row, column };
+    });
+
+    for (const { row, column } of coordinateNums) {
+      this.decrementOrThrow(row, column, this._maxValue);
+    }
+
+    for (const { row, column } of coordinateNums) {
+      coordinatesRequiringAvalanche = new Set([
+        ...coordinatesRequiringAvalanche,
+        ...this.avalanceAtCoordinate(row, column),
+      ]);
+    }
+
+    return coordinatesRequiringAvalanche;
   };
 
   topple = (row: number, column: number) => {

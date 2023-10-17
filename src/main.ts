@@ -10,11 +10,8 @@ const config = new Config(params);
 const cellColor = hexToRgb(config.cellColor);
 const cellBackgroundColor = hexToRgb(config.cellBackgroundColor);
 
-const canvas = document.querySelector<HTMLCanvasElement>('#canvas');
-
-if (!canvas) {
-  throw new Error('Canvas not defined');
-}
+const canvas = document.querySelector<HTMLCanvasElement>('#canvas')!;
+const start = document.querySelector<HTMLButtonElement>('#start')!;
 
 const context = canvas.getContext('2d');
 if (!context) {
@@ -24,6 +21,7 @@ if (!context) {
 canvas.width = config.canvasWidth;
 canvas.height = config.canvasHeight;
 context.fillStyle = config.cellColor;
+context.font = `${config.cellWidth / 4}px arial`;
 
 const grid = new Grid(
   config.canvasHeight / config.cellHeight,
@@ -52,8 +50,10 @@ const draw = (x: number, y: number, increment: boolean, force = false) => {
 
   const newValue = increment ? grid.incrementOrThrow(row, column) : grid.decrementOrThrow(row, column);
   const newCellColor = blend(cellBackgroundColor, cellColor, newValue / config.maxStackSize);
-  context.fillStyle = newCellColor;
+  context.fillStyle = newCellColor.color;
   context.fillRect(x, y, config.cellWidth, config.cellHeight);
+  context.fillStyle = newCellColor.accessibleColor;
+  context.fillText(`${newValue}`, x + 4, y + config.cellHeight / 4);
 };
 
 const clear = (x: number, y: number) => {
@@ -111,4 +111,8 @@ canvas.onmousemove = (e: MouseEvent) => {
 
 canvas.oncontextmenu = () => {
   return false;
+};
+
+start.onclick = () => {
+  grid.startAvalanche();
 };

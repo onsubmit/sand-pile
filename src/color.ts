@@ -10,12 +10,18 @@ export const setOpacity = (hex: string, alpha: number) =>
     .padStart(2, '0')}`;
 
 export const blend = (background: ColorRgb, foreground: ColorRgb, opacity: number) => {
-  const r = Math.floor(background.red + (foreground.red - background.red) * opacity);
-  const g = Math.floor(background.green + (foreground.green - background.green) * opacity);
-  const b = Math.floor(background.blue + (foreground.blue - background.blue) * opacity);
+  const red = Math.floor(background.red + (foreground.red - background.red) * opacity);
+  const green = Math.floor(background.green + (foreground.green - background.green) * opacity);
+  const blue = Math.floor(background.blue + (foreground.blue - background.blue) * opacity);
 
-  return rgbToHex(r, g, b);
+  return { color: rgbToHex(red, green, blue), accessibleColor: getAccessibleColor({ red, green, blue }) };
 };
+
+function getAccessibleColor(color: ColorRgb): string {
+  // https://www.w3.org/TR/AERT/#color-contrast
+  const sum = Math.round((color.red * 299 + color.green * 587 + color.blue * 114) / 1000);
+  return sum > 128 ? 'black' : 'white';
+}
 
 export const hexToRgb = (hex: string): ColorRgb => {
   const r = hex.substring(1, 3);
