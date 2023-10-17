@@ -1,4 +1,15 @@
 export default class Config {
+  private static readonly MIN_WIDTH = 800;
+  private static readonly MIN_HEIGHT = 800;
+  private static readonly MIN_ROWS = 5;
+  private static readonly MIN_COLUMNS = 5;
+  private static readonly MIN_CELL_WIDTH = 1;
+  private static readonly MIN_CELL_HEIGHT = 1;
+  private static readonly DEFAULT_CELL_COLOR = '#ffffff';
+  private static readonly DEFAULT_CELL_BACKGROUND_COLOR = '#242424';
+  private static readonly MAX_STACK_SIZE = 4;
+  private static readonly MIN_FRAME_DELAY = 0;
+
   private _canvasWidth: number;
   private _canvasHeight: number;
   private _rows: number;
@@ -11,17 +22,20 @@ export default class Config {
   private _frameDelay: number;
 
   constructor(params: { [key: string]: string }) {
-    this._canvasWidth = Math.max(800, parseInt(params.canvasWidth, 10) || 800);
-    this._canvasHeight = Math.max(800, parseInt(params.canvasHeight, 10) || 800);
+    this._canvasWidth = Math.max(Config.MIN_WIDTH, parseInt(params.canvasWidth || '0', 10) || Config.MIN_WIDTH);
+    this._canvasHeight = Math.max(Config.MIN_HEIGHT, parseInt(params.canvasHeight || '0', 10) || Config.MIN_HEIGHT);
 
-    this._rows = Math.max(10, parseInt(params.rows) || 10);
-    this._columns = Math.max(10, parseInt(params.columns) || 10);
-    this._cellWidth = Math.max(1, Math.floor(this._canvasWidth / this._columns));
-    this._cellHeight = Math.max(1, Math.floor(this._canvasHeight / this._rows));
-    this._cellColor = params.cellColor || '#ffffff';
-    this._cellBackgroundColor = params.cellBackgroundColor || '#242424';
-    this._maxStackSize = Math.max(4, Math.min(255, parseInt(params.maxStackSize) || 4));
-    this._frameDelay = Math.max(0, parseInt(params.frameDelay) || 0);
+    this._rows = Math.max(Config.MIN_ROWS, parseInt(params.rows || '0') || Config.MIN_ROWS);
+    this._columns = Math.max(Config.MIN_COLUMNS, parseInt(params.columns || '0') || Config.MIN_COLUMNS);
+    this._cellWidth = Math.max(Config.MIN_CELL_WIDTH, Math.floor(this._canvasWidth / this._columns));
+    this._cellHeight = Math.max(Config.MIN_CELL_HEIGHT, Math.floor(this._canvasHeight / this._rows));
+    this._cellColor = params.cellColor || Config.DEFAULT_CELL_COLOR;
+    this._cellBackgroundColor = params.cellBackgroundColor || Config.DEFAULT_CELL_BACKGROUND_COLOR;
+    this._maxStackSize = Math.max(
+      Config.MAX_STACK_SIZE,
+      Math.min(255, parseInt(params.maxStackSize || '0') || Config.MAX_STACK_SIZE)
+    );
+    this._frameDelay = Math.max(Config.MIN_FRAME_DELAY, parseInt(params.frameDelay || '0') || Config.MIN_FRAME_DELAY);
 
     if (this._cellColor && !this._cellColor.startsWith('#')) {
       this._cellColor = `#${this._cellColor}`;
