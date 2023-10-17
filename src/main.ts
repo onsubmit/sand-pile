@@ -31,7 +31,10 @@ const drawAtCoordinate = (row: number, column: number, value: number) => {
   const y = row * config.cellHeight;
   context.fillRect(x, y, config.cellWidth, config.cellHeight);
   context.fillStyle = newCellColor.accessibleColor;
-  context.fillText(`${value}`, x + 4, y + config.cellHeight / 4);
+
+  if (value) {
+    context.fillText(`${value}`, x + 4, y + config.cellHeight / 4);
+  }
 };
 
 const grid = new Grid(
