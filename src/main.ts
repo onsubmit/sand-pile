@@ -42,6 +42,7 @@ const drawAtCoordinate = (row: number, column: number, value: number) => {
 
 const expandGrid = (newRadius: number) => {
   cellSize = Math.max(MIN_CELL_SIZE, Math.floor(config.canvasWidth / (1 + 2 * newRadius)));
+  context.font = `${cellSize / 4}px arial`;
 
   context.clearRect(0, 0, canvas.width, canvas.height);
 
