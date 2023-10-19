@@ -3,6 +3,8 @@ import Config from './config';
 import Grid from './grid';
 import './style.css';
 
+const MIN_CELL_SIZE = 1;
+
 const searchParams = new URLSearchParams(window.location.search);
 const params = Object.fromEntries(searchParams);
 const config = new Config(params);
@@ -18,39 +20,64 @@ if (!context) {
   throw 'Could not get rendering context';
 }
 
+let cellSize = Math.max(MIN_CELL_SIZE, Math.floor(config.canvasWidth / (1 + 2 * config.radius)));
+
 canvas.width = config.canvasWidth;
 canvas.height = config.canvasHeight;
 context.fillStyle = config.cellColor;
-context.font = `${config.cellWidth / 4}px arial`;
+context.font = `${cellSize / 4}px arial`;
 
 const drawAtCoordinate = (row: number, column: number, value: number) => {
   const newCellColor = blend(cellBackgroundColor, cellColor, value / config.maxStackSize);
   context.fillStyle = newCellColor.color;
 
-  const x = column * config.cellWidth;
-  const y = row * config.cellHeight;
-  context.fillRect(x, y, config.cellWidth, config.cellHeight);
+  const { x, y } = mapGridCoordinatesToCanvasCoordinates(row, column);
+  context.fillRect(x, y, cellSize, cellSize);
   context.fillStyle = newCellColor.accessibleColor;
 
   if (value) {
-    context.fillText(`${value}`, x + 4, y + config.cellHeight / 4);
+    context.fillText(`${value}`, x + 4, y + cellSize - 4);
   }
 };
 
-const grid = new Grid(
-  config.canvasHeight / config.cellHeight,
-  config.canvasWidth / config.cellWidth,
-  config.maxStackSize,
-  drawAtCoordinate
-);
+const expandGrid = (newRadius: number) => {
+  cellSize = Math.max(MIN_CELL_SIZE, Math.floor(config.canvasWidth / (1 + 2 * newRadius)));
+
+  context.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let r = -newRadius; r <= newRadius; r++) {
+    for (let c = -newRadius; c <= newRadius; c++) {
+      drawAtCoordinate(r, c, grid.getValueOrThrow(r, c));
+    }
+  }
+};
+
+const radius = 1 + Math.floor(config.canvasHeight / cellSize / 2);
+const grid = new Grid(radius, config.maxStackSize, drawAtCoordinate, expandGrid);
+
+const mapCanvasCoordinatesToGridCoordinates = (x: number, y: number): { row: number; column: number } => {
+  const { radius } = grid;
+  const row = -radius + y / cellSize;
+  const column = -radius + x / cellSize;
+
+  return { row, column };
+};
+
+const mapGridCoordinatesToCanvasCoordinates = (row: number, column: number): { x: number; y: number } => {
+  const { radius } = grid;
+  const x = (radius + column) * cellSize;
+  const y = (radius + row) * cellSize;
+
+  return { x, y };
+};
 
 const drawAtMouse = (x: number, y: number, increment: boolean, force = false) => {
-  if (config.cellWidth > 1) {
-    x = Math.floor(x / config.cellWidth) * config.cellWidth;
+  if (cellSize > 1) {
+    x = Math.floor(x / cellSize) * cellSize;
   }
 
-  if (config.cellHeight > 1) {
-    y = Math.floor(y / config.cellHeight) * config.cellHeight;
+  if (cellSize > 1) {
+    y = Math.floor(y / cellSize) * cellSize;
   }
 
   if (!force && x === lastDrawnCell.x && y === lastDrawnCell.y) {
@@ -60,8 +87,7 @@ const drawAtMouse = (x: number, y: number, increment: boolean, force = false) =>
   lastDrawnCell.x = x;
   lastDrawnCell.y = y;
 
-  const row = y / config.cellHeight;
-  const column = x / config.cellWidth;
+  const { row, column } = mapCanvasCoordinatesToGridCoordinates(x, y);
 
   if (increment) {
     grid.incrementOrThrow(row, column);
@@ -71,17 +97,17 @@ const drawAtMouse = (x: number, y: number, increment: boolean, force = false) =>
 };
 
 const clear = (x: number, y: number) => {
-  if (config.cellWidth > 1) {
-    x = Math.floor(x / config.cellWidth) * config.cellWidth;
+  if (cellSize > 1) {
+    x = Math.floor(x / cellSize) * cellSize;
   }
 
-  if (config.cellHeight > 1) {
-    y = Math.floor(y / config.cellHeight) * config.cellHeight;
+  if (cellSize > 1) {
+    y = Math.floor(y / cellSize) * cellSize;
   }
 
-  grid.reset(y / config.cellHeight, x / config.cellWidth);
+  grid.reset(y / cellSize, x / cellSize);
   context.fillStyle = config.cellBackgroundColor;
-  context.fillRect(x, y, config.cellWidth, config.cellHeight);
+  context.fillRect(x, y, cellSize, cellSize);
 };
 
 let isMouseDown = false;

@@ -1,10 +1,7 @@
 export default class Config {
   private static readonly MIN_WIDTH = 800;
   private static readonly MIN_HEIGHT = 800;
-  private static readonly MIN_ROWS = 5;
-  private static readonly MIN_COLUMNS = 5;
-  private static readonly MIN_CELL_WIDTH = 1;
-  private static readonly MIN_CELL_HEIGHT = 1;
+  private static readonly MIN_RADIUS = 2;
   private static readonly DEFAULT_CELL_COLOR = '#ffffff';
   private static readonly DEFAULT_CELL_BACKGROUND_COLOR = '#242424';
   private static readonly MAX_STACK_SIZE = 4;
@@ -12,10 +9,7 @@ export default class Config {
 
   private _canvasWidth: number;
   private _canvasHeight: number;
-  private _rows: number;
-  private _columns: number;
-  private _cellWidth: number;
-  private _cellHeight: number;
+  private _radius: number;
   private _cellColor: string;
   private _cellBackgroundColor: string;
   private _maxStackSize: number;
@@ -24,11 +18,7 @@ export default class Config {
   constructor(params: { [key: string]: string }) {
     this._canvasWidth = Math.max(Config.MIN_WIDTH, parseInt(params.canvasWidth || '0', 10) || Config.MIN_WIDTH);
     this._canvasHeight = Math.max(Config.MIN_HEIGHT, parseInt(params.canvasHeight || '0', 10) || Config.MIN_HEIGHT);
-
-    this._rows = Math.max(Config.MIN_ROWS, parseInt(params.rows || '0') || Config.MIN_ROWS);
-    this._columns = Math.max(Config.MIN_COLUMNS, parseInt(params.columns || '0') || Config.MIN_COLUMNS);
-    this._cellWidth = Math.max(Config.MIN_CELL_WIDTH, Math.floor(this._canvasWidth / this._columns));
-    this._cellHeight = Math.max(Config.MIN_CELL_HEIGHT, Math.floor(this._canvasHeight / this._rows));
+    this._radius = Math.max(Config.MIN_RADIUS, parseInt(params.rows || '0') || Config.MIN_RADIUS);
     this._cellColor = params.cellColor || Config.DEFAULT_CELL_COLOR;
     this._cellBackgroundColor = params.cellBackgroundColor || Config.DEFAULT_CELL_BACKGROUND_COLOR;
     this._maxStackSize = Math.max(
@@ -50,20 +40,8 @@ export default class Config {
     return this._canvasHeight;
   }
 
-  get rows() {
-    return this._rows;
-  }
-
-  get columns() {
-    return this._columns;
-  }
-
-  get cellWidth() {
-    return this._cellWidth;
-  }
-
-  get cellHeight() {
-    return this._cellHeight;
+  get radius() {
+    return this._radius;
   }
 
   get cellColor() {

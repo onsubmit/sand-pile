@@ -1,11 +1,13 @@
+import DictionaryGrid, { ValueAndDidExpand } from './dictionaryGrid';
+
 export type DrawCallback = (row: number, column: number, value: number) => void;
+export type ExpandCallback = (newRadius: number) => void;
 
 export default class Grid {
-  private _rows: number;
-  private _columns: number;
-  private _grid: number[][];
+  private _grid: DictionaryGrid<number>;
   private _maxValue: number;
   private _drawCallback: DrawCallback;
+  private _expandCallback: ExpandCallback;
 
   private static readonly directions = [
     [-1, -1],
@@ -18,12 +20,15 @@ export default class Grid {
     [1, -1],
   ] as const;
 
-  constructor(rows: number, columns: number, maxValue: number, drawCallback: DrawCallback) {
-    this._rows = rows;
-    this._columns = columns;
-    this._grid = Array.from(Array(rows), () => Array.from(Array(columns), () => 0));
+  constructor(radius: number, maxValue: number, drawCallback: DrawCallback, expandCallback: ExpandCallback) {
+    this._grid = new DictionaryGrid<number>(radius, 0);
     this._maxValue = maxValue;
     this._drawCallback = drawCallback;
+    this._expandCallback = expandCallback;
+  }
+
+  get radius(): number {
+    return this._grid.radius;
   }
 
   decrementOrThrow = (row: number, column: number, amount = 1): number => {
@@ -33,25 +38,25 @@ export default class Grid {
     }
 
     const newValue = element - amount;
-    this._grid[row]![column] = newValue;
+    this._grid.setOrThrow(row, column, newValue);
     this._drawCallback(row, column, newValue);
 
     return newValue;
   };
 
-  increment = (row: number, column: number): number | undefined => {
-    const element = this.getValue(row, column);
+  incrementMaybeExpand = (row: number, column: number): number | undefined => {
+    const { value, didExpand } = this.getValueMaybeExpand(row, column);
 
-    if (element === undefined) {
-      return;
-    }
-
-    if (element === this._maxValue) {
+    if (value === this._maxValue) {
       return this._maxValue;
     }
 
-    const newValue = element + 1;
-    this.setValue(row, column, newValue);
+    const newValue = value + 1;
+    this.setValueMaybeExpand(row, column, newValue);
+
+    if (didExpand) {
+      this._expandCallback(this.radius);
+    }
 
     return newValue;
   };
@@ -64,7 +69,7 @@ export default class Grid {
     }
 
     const newValue = element + amount;
-    this._grid[row]![column] = newValue;
+    this._grid.setOrThrow(row, column, newValue);
     this._drawCallback(row, column, newValue);
 
     return newValue;
@@ -72,8 +77,8 @@ export default class Grid {
 
   startAvalanche = () => {
     let coordinatesRequiringAvalanche = new Set<string>();
-    for (let row = 0; row < this._rows; row++) {
-      for (let column = 0; column < this._columns; column++) {
+    for (let row = -this.radius; row <= this.radius; row++) {
+      for (let column = -this.radius; column <= this.radius; column++) {
         if (
           !coordinatesRequiringAvalanche.has(`${row},${column}`) &&
           this.getValueOrThrow(row, column) >= this._maxValue
@@ -103,7 +108,7 @@ export default class Grid {
     for (const coordinates of cardinalBorderCoordinates) {
       const [cellRow, cellColumn] = coordinates;
 
-      const newValue = this.increment(cellRow, cellColumn);
+      const newValue = this.incrementMaybeExpand(cellRow, cellColumn);
       if (newValue !== undefined) {
         this.decrementOrThrow(row, column);
 
@@ -142,7 +147,7 @@ export default class Grid {
       const newRow = row + direction[0];
       const newColumn = column + direction[1];
 
-      this.increment(newRow, newColumn);
+      this.incrementMaybeExpand(newRow, newColumn);
     }
   };
 
@@ -150,59 +155,22 @@ export default class Grid {
     this.setValueOrThrow(row, column, 0);
   };
 
-  private getValue = (row: number, column: number): number | undefined => {
-    const gridRow = this._grid[row];
-    if (!gridRow) {
-      return;
-    }
+  getValueOrThrow = (row: number, column: number): number => this._grid.getOrThrow(row, column);
 
-    const element = gridRow[column];
-    if (element === undefined) {
-      return;
-    }
+  private getValueMaybeExpand = (row: number, column: number): ValueAndDidExpand<number> =>
+    this._grid.getMaybeExpand(row, column);
 
-    return element;
-  };
-
-  private setValue = (row: number, column: number, value: number): void => {
-    const gridRow = this._grid[row];
-    if (!gridRow) {
-      return;
-    }
-
-    if (gridRow[column] === undefined) {
-      return;
-    }
-
-    gridRow[column] = value;
+  private setValueMaybeExpand = (row: number, column: number, value: number): void => {
+    const didExpand = this._grid.setMaybeExpand(row, column, value);
     this._drawCallback(row, column, value);
-  };
 
-  private getValueOrThrow = (row: number, column: number): number => {
-    const gridRow = this._grid[row];
-    if (!gridRow) {
-      throw new Error(`Invalid row: ${row}`);
+    if (didExpand) {
+      this._expandCallback(this.radius);
     }
-
-    const element = gridRow[column];
-    if (element === undefined) {
-      throw new Error(`Invalid column: ${column}`);
-    }
-
-    return element;
   };
 
   private setValueOrThrow = (row: number, column: number, value: number): void => {
-    const gridRow = this._grid[row];
-    if (!gridRow) {
-      throw new Error(`Invalid row: ${row}`);
-    }
-
-    if (gridRow[column] === undefined) {
-      throw new Error(`Invalid column: ${column}`);
-    }
-
-    gridRow[column] = value;
+    this._grid.setOrThrow(row, column, value);
     this._drawCallback(row, column, value);
   };
 }
