@@ -14,6 +14,7 @@ export default class Config {
   private _drawNumbers: boolean;
   private _maxStackSize: number;
   private _frameDelay: number;
+  private _hideControlsWhenRunning: boolean;
 
   constructor(params: { [key: string]: string }) {
     this._radius = Math.max(Config.MIN_RADIUS, parseInt(params.radius || '0') || Config.MIN_RADIUS);
@@ -26,6 +27,7 @@ export default class Config {
       Math.min(255, parseInt(params.maxStackSize || '0') || Config.MAX_STACK_SIZE)
     );
     this._frameDelay = Math.max(Config.MIN_FRAME_DELAY, parseInt(params.frameDelay || '0') || Config.MIN_FRAME_DELAY);
+    this._hideControlsWhenRunning = params.hideControlsWhenRunning === '1';
 
     if (this._cellColor && !this._cellColor.startsWith('#')) {
       this._cellColor = `#${this._cellColor}`;
@@ -58,5 +60,9 @@ export default class Config {
 
   get frameDelay() {
     return this._frameDelay;
+  }
+
+  get hideControlsWhenRunning() {
+    return this._hideControlsWhenRunning;
   }
 }

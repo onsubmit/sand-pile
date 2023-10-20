@@ -12,10 +12,12 @@ const cellColor = hexToRgb(config.cellColor);
 const cellBackgroundColor = hexToRgb(config.cellBackgroundColor);
 
 const canvas = document.querySelector<HTMLCanvasElement>('#canvas')!;
+const controls = document.querySelector<HTMLButtonElement>('.controls')!;
 const start = document.querySelector<HTMLButtonElement>('#start')!;
 const stop = document.querySelector<HTMLButtonElement>('#stop')!;
 const stepOnce = document.querySelector<HTMLButtonElement>('#stepOnce')!;
 const stepAll = document.querySelector<HTMLButtonElement>('#stepAll')!;
+const examples = document.querySelector<HTMLButtonElement>('.examples')!;
 const exampleCircle = document.querySelector<HTMLButtonElement>('#exampleCircle')!;
 
 const context = canvas.getContext('2d');
@@ -170,6 +172,11 @@ canvas.oncontextmenu = () => {
 };
 
 start.onclick = () => {
+  if (config.hideControlsWhenRunning) {
+    controls.style.visibility = 'hidden';
+    examples.style.visibility = 'hidden';
+  }
+
   startAnimation = true;
   start.disabled = true;
   stop.disabled = false;
@@ -205,6 +212,10 @@ const loop = () => {
 
   const didAvalanche = grid.avalancheOnceOverGrid();
   if (!didAvalanche) {
+    if (config.hideControlsWhenRunning) {
+      controls.style.visibility = 'visible';
+      examples.style.visibility = 'visible';
+    }
     stop.click();
     return;
   }
