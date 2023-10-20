@@ -18,7 +18,7 @@ export default class Config {
   constructor(params: { [key: string]: string }) {
     this._canvasWidth = Math.max(Config.MIN_WIDTH, parseInt(params.canvasWidth || '0', 10) || Config.MIN_WIDTH);
     this._canvasHeight = Math.max(Config.MIN_HEIGHT, parseInt(params.canvasHeight || '0', 10) || Config.MIN_HEIGHT);
-    this._radius = Math.max(Config.MIN_RADIUS, parseInt(params.rows || '0') || Config.MIN_RADIUS);
+    this._radius = Math.max(Config.MIN_RADIUS, parseInt(params.radius || '0') || Config.MIN_RADIUS);
     this._cellColor = params.cellColor || Config.DEFAULT_CELL_COLOR;
     this._cellBackgroundColor = params.cellBackgroundColor || Config.DEFAULT_CELL_BACKGROUND_COLOR;
     this._maxStackSize = Math.max(
