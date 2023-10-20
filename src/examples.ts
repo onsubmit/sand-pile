@@ -10,3 +10,15 @@ export const drawCircle = (radius: number, maxValue: number): DrawExampleFn => {
     return 0;
   };
 };
+
+export const fill = (maxValue: number): DrawExampleFn => {
+  return (_row: number, _column: number) => {
+    return maxValue;
+  };
+};
+
+export const drawRandomly = (maxValue: number): DrawExampleFn => {
+  return (_row: number, _column: number) => {
+    return Math.round(maxValue * Math.random());
+  };
+};

@@ -1,6 +1,6 @@
 import { blend, hexToRgb } from './color';
 import Config from './config';
-import { drawCircle } from './examples';
+import { drawCircle, drawRandomly, fill } from './examples';
 import Grid from './grid';
 import './style.css';
 
@@ -19,6 +19,8 @@ const stepOnce = document.querySelector<HTMLButtonElement>('#stepOnce')!;
 const stepAll = document.querySelector<HTMLButtonElement>('#stepAll')!;
 const examples = document.querySelector<HTMLButtonElement>('.examples')!;
 const exampleCircle = document.querySelector<HTMLButtonElement>('#exampleCircle')!;
+const exampleFill = document.querySelector<HTMLButtonElement>('#exampleFill')!;
+const exampleRandom = document.querySelector<HTMLButtonElement>('#exampleRandom')!;
 
 const context = canvas.getContext('2d');
 if (!context) {
@@ -203,6 +205,14 @@ stepAll.onclick = () => {
 
 exampleCircle.onclick = () => {
   grid.drawExample(drawCircle(grid.radius, grid.maxValue));
+};
+
+exampleFill.onclick = () => {
+  grid.drawExample(fill(grid.maxValue));
+};
+
+exampleRandom.onclick = () => {
+  grid.drawExample(drawRandomly(grid.maxValue));
 };
 
 const loop = () => {
