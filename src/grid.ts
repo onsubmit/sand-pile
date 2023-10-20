@@ -113,27 +113,6 @@ export default class Grid {
     return coordinatesRequiringAvalanche.length > 0;
   };
 
-  startAvalanche = () => {
-    let coordinatesRequiringAvalanche = new Set<string>();
-    for (let row = -this.radius; row <= this.radius; row++) {
-      for (let column = -this.radius; column <= this.radius; column++) {
-        if (
-          !coordinatesRequiringAvalanche.has(`${row},${column}`) &&
-          this.getValueOrThrow(row, column) >= this._maxValue
-        ) {
-          coordinatesRequiringAvalanche = new Set([
-            ...coordinatesRequiringAvalanche,
-            ...this.avalancheAtCoordinate(row, column),
-          ]);
-        }
-      }
-    }
-
-    while (coordinatesRequiringAvalanche.size) {
-      coordinatesRequiringAvalanche = this.avalancheAtCoordinates(coordinatesRequiringAvalanche);
-    }
-  };
-
   avalancheAtCoordinate = (row: number, column: number): Set<string> => {
     const cardinalBorderCoordinates = [
       [row - 1, column],
@@ -176,17 +155,6 @@ export default class Grid {
     }
 
     return coordinatesRequiringAvalanche;
-  };
-
-  topple = (row: number, column: number) => {
-    this.reset(row, column);
-
-    for (const direction of Grid.directions) {
-      const newRow = row + direction[0];
-      const newColumn = column + direction[1];
-
-      this.incrementMaybeExpand(newRow, newColumn);
-    }
   };
 
   reset = (row: number, column: number) => {
