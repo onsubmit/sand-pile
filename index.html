@@ -6,7 +6,16 @@
     <title>Sand Pile</title>
   </head>
   <body>
-    <button id="start">Start</button>
+    <div class="controls">
+      <button id="start">Start ▶️</button>
+      <button id="stop" disabled>Stop ⏹️</button>
+
+      <span>
+        <button id="stepOnce">Step Once ⏯️</button>
+        <button id="stepAll">Step All ⏭️</button>
+      </span>
+    </div>
+
     <canvas id="canvas"></canvas>
 
     <script type="module" src="/src/main.ts"></script>

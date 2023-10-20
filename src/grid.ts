@@ -47,10 +47,6 @@ export default class Grid {
   incrementMaybeExpand = (row: number, column: number): number | undefined => {
     const { value, didExpand } = this.getValueMaybeExpand(row, column);
 
-    if (value === this._maxValue) {
-      return this._maxValue;
-    }
-
     const newValue = value + 1;
     this.setValueMaybeExpand(row, column, newValue);
 
@@ -73,6 +69,34 @@ export default class Grid {
     this._drawCallback(row, column, newValue);
 
     return newValue;
+  };
+
+  avalancheOnce = () => {
+    for (let row = -this.radius; row <= this.radius; row++) {
+      for (let column = -this.radius; column <= this.radius; column++) {
+        if (this.getValueOrThrow(row, column) >= this._maxValue) {
+          this.avalancheAtCoordinate(row, column);
+          return;
+        }
+      }
+    }
+  };
+
+  avalancheOnceOverGrid = (): boolean => {
+    const coordinatesRequiringAvalanche: Array<{ row: number; column: number }> = [];
+    for (let row = -this.radius; row <= this.radius; row++) {
+      for (let column = -this.radius; column <= this.radius; column++) {
+        if (this.getValueOrThrow(row, column) >= this._maxValue) {
+          coordinatesRequiringAvalanche.push({ row, column });
+        }
+      }
+    }
+
+    for (const { row, column } of coordinatesRequiringAvalanche) {
+      this.avalancheAtCoordinate(row, column);
+    }
+
+    return coordinatesRequiringAvalanche.length > 0;
   };
 
   startAvalanche = () => {

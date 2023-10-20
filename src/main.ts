@@ -14,28 +14,42 @@ const cellBackgroundColor = hexToRgb(config.cellBackgroundColor);
 
 const canvas = document.querySelector<HTMLCanvasElement>('#canvas')!;
 const start = document.querySelector<HTMLButtonElement>('#start')!;
+const stop = document.querySelector<HTMLButtonElement>('#stop')!;
+const stepOnce = document.querySelector<HTMLButtonElement>('#stepOnce')!;
+const stepAll = document.querySelector<HTMLButtonElement>('#stepAll')!;
 
 const context = canvas.getContext('2d');
 if (!context) {
   throw 'Could not get rendering context';
 }
 
+let startAnimation = false;
 let cellSize = Math.max(MIN_CELL_SIZE, Math.floor(config.canvasWidth / (1 + 2 * config.radius)));
 
 canvas.width = config.canvasWidth;
 canvas.height = config.canvasHeight;
 context.fillStyle = config.cellColor;
 context.font = `${cellSize / 4}px arial`;
+context.lineWidth = 2;
+context.strokeStyle = config.cellBackgroundColor;
 
 const drawAtCoordinate = (row: number, column: number, value: number) => {
-  const newCellColor = blend(cellBackgroundColor, cellColor, value / config.maxStackSize);
+  const newCellColor = blend(
+    cellBackgroundColor,
+    cellColor,
+    Math.min(value, config.maxStackSize) / config.maxStackSize
+  );
+
   context.fillStyle = newCellColor.color;
 
   const { x, y } = mapGridCoordinatesToCanvasCoordinates(row, column);
-  context.fillRect(x, y, cellSize, cellSize);
-  context.fillStyle = newCellColor.accessibleColor;
+  context.beginPath();
+  context.rect(x, y, cellSize, cellSize);
+  context.fill();
+  context.stroke();
 
   if (value) {
+    context.fillStyle = newCellColor.accessibleColor;
     context.fillText(`${value}`, x + 4, y + cellSize - 4);
   }
 };
@@ -90,6 +104,10 @@ const drawAtMouse = (x: number, y: number, increment: boolean, force = false) =>
 
   const { row, column } = mapCanvasCoordinatesToGridCoordinates(x, y);
 
+  if (increment && grid.getValueOrThrow(row, column) >= config.maxStackSize) {
+    return;
+  }
+
   if (increment) {
     grid.incrementOrThrow(row, column);
   } else {
@@ -106,7 +124,9 @@ const clear = (x: number, y: number) => {
     y = Math.floor(y / cellSize) * cellSize;
   }
 
-  grid.reset(y / cellSize, x / cellSize);
+  const { row, column } = mapCanvasCoordinatesToGridCoordinates(x, y);
+
+  grid.reset(row, column);
   context.fillStyle = config.cellBackgroundColor;
   context.fillRect(x, y, cellSize, cellSize);
 };
@@ -155,5 +175,50 @@ canvas.oncontextmenu = () => {
 };
 
 start.onclick = () => {
-  grid.startAvalanche();
+  startAnimation = true;
+  start.disabled = true;
+  stop.disabled = false;
+  stepAll.disabled = true;
+  stepOnce.disabled = true;
+  requestLoop();
+};
+
+stop.onclick = () => {
+  startAnimation = false;
+  start.disabled = false;
+  stop.disabled = true;
+  stepAll.disabled = false;
+  stepOnce.disabled = false;
+};
+
+stepOnce.onclick = () => {
+  grid.avalancheOnce();
+};
+
+stepAll.onclick = () => {
+  grid.avalancheOnceOverGrid();
+};
+
+const loop = () => {
+  if (!startAnimation) {
+    return;
+  }
+
+  const didAvalanche = grid.avalancheOnceOverGrid();
+  if (!didAvalanche) {
+    stop.click();
+    return;
+  }
+
+  if (config.frameDelay > 0) {
+    setTimeout(() => {
+      requestLoop();
+    }, config.frameDelay);
+  } else {
+    requestLoop();
+  }
+};
+
+const requestLoop = () => {
+  window.requestAnimationFrame(() => loop());
 };
