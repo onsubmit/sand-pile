@@ -4,8 +4,6 @@ import { drawCircle } from './examples';
 import Grid from './grid';
 import './style.css';
 
-const MIN_CELL_SIZE = 1;
-
 const searchParams = new URLSearchParams(window.location.search);
 const params = Object.fromEntries(searchParams);
 const config = new Config(params);
@@ -26,14 +24,13 @@ if (!context) {
 }
 
 let startAnimation = false;
-let cellSize = Math.max(MIN_CELL_SIZE, Math.floor(config.canvasWidth / (1 + 2 * config.radius)));
+const cellSize = config.cellSize;
+const initialGridWidthInNumCells = 1 + 2 * config.radius;
 
-canvas.width = config.canvasWidth;
-canvas.height = config.canvasHeight;
+canvas.width = cellSize * initialGridWidthInNumCells;
+canvas.height = cellSize * initialGridWidthInNumCells;
 context.fillStyle = config.cellColor;
 context.font = `${cellSize / 4}px arial`;
-context.lineWidth = 2;
-context.strokeStyle = config.cellBackgroundColor;
 
 const drawAtCoordinate = (row: number, column: number, value: number) => {
   const newCellColor = blend(
@@ -45,20 +42,17 @@ const drawAtCoordinate = (row: number, column: number, value: number) => {
   context.fillStyle = newCellColor.color;
 
   const { x, y } = mapGridCoordinatesToCanvasCoordinates(row, column);
-  context.beginPath();
-  context.rect(x, y, cellSize, cellSize);
-  context.fill();
-  context.stroke();
+  context.fillRect(x, y, cellSize, cellSize);
 
-  if (value) {
+  if (config.drawNumbers && value) {
     context.fillStyle = newCellColor.accessibleColor;
     context.fillText(`${value}`, x + 4, y + cellSize - 4);
   }
 };
 
 const expandGrid = (newRadius: number) => {
-  cellSize = Math.max(MIN_CELL_SIZE, Math.floor(config.canvasWidth / (1 + 2 * newRadius)));
-  context.font = `${cellSize / 4}px arial`;
+  canvas.width = cellSize * (1 + 2 * newRadius);
+  canvas.height = cellSize * (1 + 2 * newRadius);
 
   context.clearRect(0, 0, canvas.width, canvas.height);
 
