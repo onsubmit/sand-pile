@@ -2,6 +2,7 @@ import DictionaryGrid, { ValueAndDidExpand } from './dictionaryGrid';
 
 export type DrawCallback = (row: number, column: number, value: number) => void;
 export type ExpandCallback = (newRadius: number) => void;
+export type DrawExampleFn = (row: number, column: number) => number;
 
 export default class Grid {
   private _grid: DictionaryGrid<number>;
@@ -30,6 +31,19 @@ export default class Grid {
   get radius(): number {
     return this._grid.radius;
   }
+
+  get maxValue(): number {
+    return this._maxValue;
+  }
+
+  drawExample = (drawExampleFn: DrawExampleFn) => {
+    for (let row = -this.radius; row <= this.radius; row++) {
+      for (let column = -this.radius; column <= this.radius; column++) {
+        const value = drawExampleFn(row, column);
+        this.setValueOrThrow(row, column, value);
+      }
+    }
+  };
 
   decrementOrThrow = (row: number, column: number, amount = 1): number => {
     const element = this.getValueOrThrow(row, column);

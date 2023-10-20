@@ -1,5 +1,6 @@
 import { blend, hexToRgb } from './color';
 import Config from './config';
+import { drawCircle } from './examples';
 import Grid from './grid';
 import './style.css';
 
@@ -17,6 +18,7 @@ const start = document.querySelector<HTMLButtonElement>('#start')!;
 const stop = document.querySelector<HTMLButtonElement>('#stop')!;
 const stepOnce = document.querySelector<HTMLButtonElement>('#stepOnce')!;
 const stepAll = document.querySelector<HTMLButtonElement>('#stepAll')!;
+const exampleCircle = document.querySelector<HTMLButtonElement>('#exampleCircle')!;
 
 const context = canvas.getContext('2d');
 if (!context) {
@@ -67,8 +69,7 @@ const expandGrid = (newRadius: number) => {
   }
 };
 
-const radius = 1 + Math.floor(config.canvasHeight / cellSize / 2);
-const grid = new Grid(radius, config.maxStackSize, drawAtCoordinate, expandGrid);
+const grid = new Grid(config.radius, config.maxStackSize, drawAtCoordinate, expandGrid);
 
 const mapCanvasCoordinatesToGridCoordinates = (x: number, y: number): { row: number; column: number } => {
   const { radius } = grid;
@@ -197,6 +198,10 @@ stepOnce.onclick = () => {
 
 stepAll.onclick = () => {
   grid.avalancheOnceOverGrid();
+};
+
+exampleCircle.onclick = () => {
+  grid.drawExample(drawCircle(grid.radius, grid.maxValue));
 };
 
 const loop = () => {
