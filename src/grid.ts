@@ -10,17 +10,6 @@ export default class Grid {
   private _drawCallback: DrawCallback;
   private _expandCallback: ExpandCallback;
 
-  private static readonly directions = [
-    [-1, -1],
-    [-1, 0],
-    [-1, 1],
-    [0, -1],
-    [0, 1],
-    [1, -1],
-    [1, 0],
-    [1, -1],
-  ] as const;
-
   constructor(radius: number, maxValue: number, drawCallback: DrawCallback, expandCallback: ExpandCallback) {
     this._grid = new DictionaryGrid<number>(radius, 0);
     this._maxValue = maxValue;
