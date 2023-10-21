@@ -1,10 +1,10 @@
+import Canvas from './canvas';
 import { blend, hexToRgb } from './color';
 import { InputNumberTypeObserver, InputTextTypeObserver } from './elementObserver';
 import { drawCheckerboard, drawCircle, drawRandomly, fill } from './examples';
 import Grid from './grid';
 import './style.css';
 
-const canvas = document.querySelector<HTMLCanvasElement>('#canvas')!;
 const start = document.querySelector<HTMLButtonElement>('#start')!;
 const stop = document.querySelector<HTMLButtonElement>('#stop')!;
 const stepOnce = document.querySelector<HTMLButtonElement>('#stepOnce')!;
@@ -22,22 +22,58 @@ const cellSize = new InputNumberTypeObserver('#cellSize', onCellSizeChange).list
 const cellColor = new InputTextTypeObserver('#cellColor', onCellColorChange).listen();
 const cellBackgroundColor = new InputTextTypeObserver('#cellBackgroundColor', onCellBackgroundColorChange).listen();
 
-const context = canvas.getContext('2d');
-if (!context) {
-  throw 'Could not get rendering context';
-}
-
 let startAnimation = false;
 let numIterations = 0;
 let cellColorRgb = hexToRgb(cellColor.value);
 let cellBackgroundColorRgb = hexToRgb(cellBackgroundColor.value);
 const initialGridWidthInNumCells = 1 + 2 * radius.value;
 
-canvas.width = cellSize.value * initialGridWidthInNumCells;
-canvas.height = cellSize.value * initialGridWidthInNumCells;
-canvas.style.width = `${canvas.width}px`;
-canvas.style.height = `${canvas.height}px`;
-context.fillStyle = cellColor.value;
+const canvas = new Canvas('#canvas');
+canvas.size = cellSize.value * initialGridWidthInNumCells;
+canvas.context.fillStyle = cellColor.value;
+
+const mouseState = {
+  isMouseDown: false,
+  isMiddleClick: false,
+  isRightClick: false,
+};
+
+const lastDrawnCell: { x: number | undefined; y: number | undefined } = { x: undefined, y: undefined };
+
+canvas.element.addEventListener('mousedown', (e: MouseEvent) => {
+  mouseState.isMouseDown = true;
+  mouseState.isMiddleClick = e.button === 1;
+  mouseState.isRightClick = e.button === 2;
+
+  const { offsetX: x, offsetY: y } = e;
+  if (mouseState.isRightClick) {
+    clear(x, y);
+  } else if (mouseState.isMiddleClick) {
+    drawAtMouse(x, y, false, true);
+  } else {
+    drawAtMouse(x, y, true, true);
+  }
+});
+
+canvas.element.onmouseup = () => {
+  mouseState.isMouseDown = false;
+};
+
+canvas.element.onmousemove = (e: MouseEvent) => {
+  if (mouseState.isMouseDown) {
+    const { offsetX: x, offsetY: y } = e;
+
+    if (mouseState.isRightClick) {
+      clear(x, y);
+    } else if (mouseState.isMiddleClick) {
+      drawAtMouse(x, y, false);
+    } else {
+      drawAtMouse(x, y, true);
+    }
+  }
+};
+
+canvas.element.oncontextmenu = () => false;
 
 const drawAtCoordinate = (row: number, column: number, value: number) => {
   const newCellColor = blend(
@@ -46,19 +82,15 @@ const drawAtCoordinate = (row: number, column: number, value: number) => {
     Math.min(value, toppleThreshold.value) / toppleThreshold.value
   );
 
-  context.fillStyle = newCellColor.color;
+  canvas.context.fillStyle = newCellColor.color;
 
   const { x, y } = mapGridCoordinatesToCanvasCoordinates(row, column);
-  context.fillRect(x, y, cellSize.value, cellSize.value);
+  canvas.context.fillRect(x, y, cellSize.value, cellSize.value);
 };
 
 const redraw = (newRadius: number): void => {
-  canvas.width = cellSize.value * (1 + 2 * newRadius);
-  canvas.height = cellSize.value * (1 + 2 * newRadius);
-  canvas.style.width = `${canvas.width}px`;
-  canvas.style.height = `${canvas.height}px`;
-
-  context.clearRect(0, 0, canvas.width, canvas.height);
+  canvas.size = cellSize.value * (1 + 2 * newRadius);
+  canvas.context.clearRect(0, 0, canvas.size, canvas.size);
 
   radius.value = newRadius;
 
@@ -129,51 +161,8 @@ const clear = (x: number, y: number) => {
   const { row, column } = mapCanvasCoordinatesToGridCoordinates(x, y);
 
   grid.reset(row, column);
-  context.fillStyle = cellBackgroundColor.value;
-  context.fillRect(x, y, cellSize.value, cellSize.value);
-};
-
-let isMouseDown = false;
-let isMiddleClick = false;
-let isRightClick = false;
-
-const lastDrawnCell: { x: number | undefined; y: number | undefined } = { x: undefined, y: undefined };
-
-canvas.onmousedown = (e: MouseEvent) => {
-  isMouseDown = true;
-  isMiddleClick = e.button === 1;
-  isRightClick = e.button === 2;
-
-  const { offsetX: x, offsetY: y } = e;
-  if (isRightClick) {
-    clear(x, y);
-  } else if (isMiddleClick) {
-    drawAtMouse(x, y, false, true);
-  } else {
-    drawAtMouse(x, y, true, true);
-  }
-};
-
-canvas.onmouseup = () => {
-  isMouseDown = false;
-};
-
-canvas.onmousemove = (e: MouseEvent) => {
-  if (isMouseDown) {
-    const { offsetX: x, offsetY: y } = e;
-
-    if (isRightClick) {
-      clear(x, y);
-    } else if (isMiddleClick) {
-      drawAtMouse(x, y, false);
-    } else {
-      drawAtMouse(x, y, true);
-    }
-  }
-};
-
-canvas.oncontextmenu = () => {
-  return false;
+  canvas.context.fillStyle = cellBackgroundColor.value;
+  canvas.context.fillRect(x, y, cellSize.value, cellSize.value);
 };
 
 start.onclick = () => {
@@ -207,7 +196,7 @@ stepAll.onclick = () => {
 download.onclick = () => {
   const link = document.createElement('a');
   link.download = `filename-${numIterations}.png`;
-  link.href = canvas.toDataURL();
+  link.href = canvas.element.toDataURL();
   link.click();
 };
 
@@ -259,11 +248,7 @@ function onToppleThresholdChange(newToppleThreshold: number) {
 
 function onCellSizeChange(newCellSize: number) {
   const initialGridWidthInNumCells = 1 + 2 * radius.value;
-
-  canvas.width = newCellSize * initialGridWidthInNumCells;
-  canvas.height = newCellSize * initialGridWidthInNumCells;
-  canvas.style.width = `${canvas.width}px`;
-  canvas.style.height = `${canvas.height}px`;
+  canvas.size = newCellSize * initialGridWidthInNumCells;
   grid.redraw();
 }
 
