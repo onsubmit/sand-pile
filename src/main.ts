@@ -63,11 +63,11 @@ function setupControlEvents() {
   };
 
   stepOnce.onclick = () => {
-    grid.avalancheOnce();
+    grid.toppleOnce();
   };
 
   stepAll.onclick = () => {
-    grid.avalancheOnceOverGrid();
+    grid.toppleOnceOverGrid();
   };
 
   download.onclick = () => {
@@ -193,8 +193,8 @@ function loop() {
 
   ++numIterations;
 
-  const didAvalanche = grid.avalancheOnceOverGrid();
-  if (!didAvalanche) {
+  const toppled = grid.toppleOnceOverGrid();
+  if (!toppled) {
     stop.click();
     console.log(`Num iterations: ${numIterations}`);
     return;

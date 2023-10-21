@@ -86,35 +86,35 @@ export default class Grid {
     return newValue;
   };
 
-  avalancheOnce = () => {
+  toppleOnce = () => {
     for (let row = -this.radius; row <= this.radius; row++) {
       for (let column = -this.radius; column <= this.radius; column++) {
         if (this.getValueOrThrow(row, column) >= this.#toppleThreshold) {
-          this.avalancheAtCoordinate(row, column);
+          this.toppleAtCoordinate(row, column);
           return;
         }
       }
     }
   };
 
-  avalancheOnceOverGrid = (): boolean => {
-    const coordinatesRequiringAvalanche: Array<{ row: number; column: number }> = [];
+  toppleOnceOverGrid = (): boolean => {
+    const coordinatesRequiringToppling: Array<{ row: number; column: number }> = [];
     for (let row = -this.radius; row <= this.radius; row++) {
       for (let column = -this.radius; column <= this.radius; column++) {
         if (this.getValueOrThrow(row, column) >= this.#toppleThreshold) {
-          coordinatesRequiringAvalanche.push({ row, column });
+          coordinatesRequiringToppling.push({ row, column });
         }
       }
     }
 
-    for (const { row, column } of coordinatesRequiringAvalanche) {
-      this.avalancheAtCoordinate(row, column);
+    for (const { row, column } of coordinatesRequiringToppling) {
+      this.toppleAtCoordinate(row, column);
     }
 
-    return coordinatesRequiringAvalanche.length > 0;
+    return coordinatesRequiringToppling.length > 0;
   };
 
-  avalancheAtCoordinate = (row: number, column: number): Set<string> => {
+  toppleAtCoordinate = (row: number, column: number): Set<string> => {
     const cardinalBorderCoordinates = [
       [row - 1, column],
       [row, column + 1],
@@ -122,7 +122,7 @@ export default class Grid {
       [row, column - 1],
     ] as const;
 
-    let coordinatesRequiringAvalanche = new Set<string>();
+    let coordinatesRequiringToppling = new Set<string>();
     for (const coordinates of cardinalBorderCoordinates) {
       const [cellRow, cellColumn] = coordinates;
 
@@ -131,16 +131,16 @@ export default class Grid {
         this.decrementOrThrow(row, column);
 
         if (newValue >= this.#toppleThreshold) {
-          coordinatesRequiringAvalanche.add(`${cellRow},${cellColumn}`);
+          coordinatesRequiringToppling.add(`${cellRow},${cellColumn}`);
         }
       }
     }
 
-    return coordinatesRequiringAvalanche;
+    return coordinatesRequiringToppling;
   };
 
-  avalancheAtCoordinates = (coordinates: Set<string>): Set<string> => {
-    let coordinatesRequiringAvalanche = new Set<string>();
+  toppleAtCoordinates = (coordinates: Set<string>): Set<string> => {
+    let coordinatesRequiringToppling = new Set<string>();
     const coordinateNums = [...coordinates].map((c) => {
       const split = c.split(',');
       const row = parseInt(split[0]!, 10);
@@ -149,13 +149,13 @@ export default class Grid {
     });
 
     for (const { row, column } of coordinateNums) {
-      coordinatesRequiringAvalanche = new Set([
-        ...coordinatesRequiringAvalanche,
-        ...this.avalancheAtCoordinate(row, column),
+      coordinatesRequiringToppling = new Set([
+        ...coordinatesRequiringToppling,
+        ...this.toppleAtCoordinate(row, column),
       ]);
     }
 
-    return coordinatesRequiringAvalanche;
+    return coordinatesRequiringToppling;
   };
 
   reset = (row: number, column: number) => {
