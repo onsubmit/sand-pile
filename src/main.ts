@@ -23,6 +23,7 @@ const exampleCircle = document.querySelector<HTMLButtonElement>('#exampleCircle'
 const exampleFill = document.querySelector<HTMLButtonElement>('#exampleFill')!;
 const exampleRandom = document.querySelector<HTMLButtonElement>('#exampleRandom')!;
 const radius = document.querySelector<HTMLInputElement>('#radius')!;
+const cellSizeEl = document.querySelector<HTMLInputElement>('#cellSize')!;
 
 const context = canvas.getContext('2d');
 if (!context) {
@@ -31,7 +32,7 @@ if (!context) {
 
 let startAnimation = false;
 let numIterations = 0;
-const cellSize = config.cellSize;
+let cellSize = cellSizeEl.valueAsNumber;
 const initialGridWidthInNumCells = 1 + 2 * radius.valueAsNumber;
 
 canvas.width = cellSize * initialGridWidthInNumCells;
@@ -235,6 +236,16 @@ exampleRandom.onclick = () => {
 radius.onchange = () => {
   grid.maybeResize(radius.valueAsNumber);
   redrawAfterResize(radius.valueAsNumber);
+};
+
+cellSizeEl.onchange = () => {
+  cellSize = cellSizeEl.valueAsNumber;
+  const initialGridWidthInNumCells = 1 + 2 * radius.valueAsNumber;
+
+  canvas.width = cellSize * initialGridWidthInNumCells;
+  canvas.height = cellSize * initialGridWidthInNumCells;
+  context.font = `${cellSize / 4}px arial`;
+  grid.redraw();
 };
 
 const loop = () => {

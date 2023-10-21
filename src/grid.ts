@@ -25,6 +25,15 @@ export default class Grid {
     return this._maxValue;
   }
 
+  redraw = () => {
+    for (let row = -this.radius; row <= this.radius; row++) {
+      for (let column = -this.radius; column <= this.radius; column++) {
+        const value = this._grid.getOrThrow(row, column);
+        this._drawCallback(row, column, value);
+      }
+    }
+  };
+
   drawExample = (drawExampleFn: DrawExampleFn) => {
     for (let row = -this.radius; row <= this.radius; row++) {
       for (let column = -this.radius; column <= this.radius; column++) {

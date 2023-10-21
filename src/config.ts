@@ -1,12 +1,9 @@
 export default class Config {
-  private static readonly MIN_CELL_SIZE = 3;
-  private static readonly DEFAULT_CELL_SIZE = 20;
   private static readonly DEFAULT_CELL_COLOR = '#ffffff';
   private static readonly DEFAULT_CELL_BACKGROUND_COLOR = '#242424';
   private static readonly MIN_MAX_STACK_SIZE = 4;
   private static readonly MIN_FRAME_DELAY = 0;
 
-  private _cellSize: number;
   private _cellColor: string;
   private _cellBackgroundColor: string;
   private _drawNumbers: boolean;
@@ -15,7 +12,6 @@ export default class Config {
   private _hideControlsWhenRunning: boolean;
 
   constructor(params: { [key: string]: string }) {
-    this._cellSize = Math.max(Config.MIN_CELL_SIZE, parseInt(params.cellSize || '0', 10) || Config.DEFAULT_CELL_SIZE);
     this._cellColor = params.cellColor || Config.DEFAULT_CELL_COLOR;
     this._cellBackgroundColor = params.cellBackgroundColor || Config.DEFAULT_CELL_BACKGROUND_COLOR;
     this._drawNumbers = params.drawNumbers === '1';
@@ -29,10 +25,6 @@ export default class Config {
     if (this._cellColor && !this._cellColor.startsWith('#')) {
       this._cellColor = `#${this._cellColor}`;
     }
-  }
-
-  get cellSize() {
-    return this._cellSize;
   }
 
   get cellColor() {
