@@ -41,7 +41,6 @@ const initialGridWidthInNumCells = 1 + 2 * radius.valueAsNumber;
 canvas.width = cellSize * initialGridWidthInNumCells;
 canvas.height = cellSize * initialGridWidthInNumCells;
 context.fillStyle = cellColor;
-context.font = `${cellSize / 4}px arial`;
 
 const drawAtCoordinate = (row: number, column: number, value: number) => {
   const newCellColor = blend(
@@ -54,11 +53,6 @@ const drawAtCoordinate = (row: number, column: number, value: number) => {
 
   const { x, y } = mapGridCoordinatesToCanvasCoordinates(row, column);
   context.fillRect(x, y, cellSize, cellSize);
-
-  if (config.drawNumbers && value) {
-    context.fillStyle = newCellColor.accessibleColor;
-    context.fillText(`${value}`, x + 4, y + cellSize - 4);
-  }
 };
 
 const redraw = (newRadius: number): void => {
@@ -247,7 +241,6 @@ cellSizeEl.onchange = () => {
 
   canvas.width = cellSize * initialGridWidthInNumCells;
   canvas.height = cellSize * initialGridWidthInNumCells;
-  context.font = `${cellSize / 4}px arial`;
   grid.redraw();
 };
 
