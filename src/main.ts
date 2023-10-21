@@ -1,21 +1,14 @@
 import { blend, hexToRgb } from './color';
-import Config from './config';
 import { drawCircle, drawRandomly, fill } from './examples';
 import Grid from './grid';
 import './style.css';
 
-const searchParams = new URLSearchParams(window.location.search);
-const params = Object.fromEntries(searchParams);
-const config = new Config(params);
-
 const canvas = document.querySelector<HTMLCanvasElement>('#canvas')!;
-const controls = document.querySelector<HTMLButtonElement>('.controls')!;
 const start = document.querySelector<HTMLButtonElement>('#start')!;
 const stop = document.querySelector<HTMLButtonElement>('#stop')!;
 const stepOnce = document.querySelector<HTMLButtonElement>('#stepOnce')!;
 const stepAll = document.querySelector<HTMLButtonElement>('#stepAll')!;
 const download = document.querySelector<HTMLButtonElement>('#download')!;
-const examples = document.querySelector<HTMLButtonElement>('.examples')!;
 const exampleCircle = document.querySelector<HTMLButtonElement>('#exampleCircle')!;
 const exampleFill = document.querySelector<HTMLButtonElement>('#exampleFill')!;
 const exampleRandom = document.querySelector<HTMLButtonElement>('#exampleRandom')!;
@@ -178,11 +171,6 @@ canvas.oncontextmenu = () => {
 };
 
 start.onclick = () => {
-  if (config.hideControlsWhenRunning) {
-    controls.style.visibility = 'hidden';
-    examples.style.visibility = 'hidden';
-  }
-
   numIterations = 0;
   startAnimation = true;
   start.disabled = true;
@@ -218,7 +206,7 @@ download.onclick = () => {
 };
 
 exampleCircle.onclick = () => {
-  grid.drawExample(drawCircle(grid.radius, grid.toppleThreshold));
+  grid.drawExample(drawCircle(grid.radius, maxCellGrains));
 };
 
 exampleFill.onclick = () => {
@@ -273,22 +261,12 @@ const loop = () => {
 
   const didAvalanche = grid.avalancheOnceOverGrid();
   if (!didAvalanche) {
-    if (config.hideControlsWhenRunning) {
-      controls.style.visibility = 'visible';
-      examples.style.visibility = 'visible';
-    }
     stop.click();
     console.log(`Num iterations: ${numIterations}`);
     return;
   }
 
-  if (config.frameDelay > 0) {
-    setTimeout(() => {
-      requestLoop();
-    }, config.frameDelay);
-  } else {
-    requestLoop();
-  }
+  requestLoop();
 };
 
 const requestLoop = () => {
