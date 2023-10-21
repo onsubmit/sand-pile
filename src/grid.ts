@@ -1,5 +1,7 @@
 import DictionaryGrid from './dictionaryGrid';
 
+export type GridCoordinates = { row: number; column: number };
+
 export type DrawCallback = (row: number, column: number, value: number) => void;
 export type ResizeCallback = (newRadius: number) => void;
 export type DrawExampleFn = (row: number, column: number, gridRadius: number) => number;

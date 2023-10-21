@@ -1,0 +1,9 @@
+export const start = document.querySelector<HTMLButtonElement>('#start')!;
+export const stop = document.querySelector<HTMLButtonElement>('#stop')!;
+export const stepOnce = document.querySelector<HTMLButtonElement>('#stepOnce')!;
+export const stepAll = document.querySelector<HTMLButtonElement>('#stepAll')!;
+export const download = document.querySelector<HTMLButtonElement>('#download')!;
+export const exampleCircle = document.querySelector<HTMLButtonElement>('#exampleCircle')!;
+export const exampleFill = document.querySelector<HTMLButtonElement>('#exampleFill')!;
+export const exampleCheckerboard = document.querySelector<HTMLButtonElement>('#exampleCheckerboard')!;
+export const exampleRandom = document.querySelector<HTMLButtonElement>('#exampleRandom')!;

@@ -4,24 +4,13 @@ export type ColorRgb = {
   blue: number;
 };
 
-export const setOpacity = (hex: string, alpha: number) =>
-  `${hex}${Math.floor(alpha * 255)
-    .toString(16)
-    .padStart(2, '0')}`;
-
 export const blend = (background: ColorRgb, foreground: ColorRgb, opacity: number) => {
   const red = Math.floor(background.red + (foreground.red - background.red) * opacity);
   const green = Math.floor(background.green + (foreground.green - background.green) * opacity);
   const blue = Math.floor(background.blue + (foreground.blue - background.blue) * opacity);
 
-  return { color: rgbToHex(red, green, blue), accessibleColor: getAccessibleColor({ red, green, blue }) };
+  return rgbToHex(red, green, blue);
 };
-
-function getAccessibleColor(color: ColorRgb): string {
-  // https://www.w3.org/TR/AERT/#color-contrast
-  const sum = Math.round((color.red * 299 + color.green * 587 + color.blue * 114) / 1000);
-  return sum > 128 ? 'black' : 'white';
-}
 
 export const hexToRgb = (hex: string): ColorRgb => {
   const r = hex.substring(1, 3);

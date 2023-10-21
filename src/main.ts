@@ -1,19 +1,20 @@
-import Canvas from './canvas';
+import Canvas, { CanvasCoordinates } from './canvas';
 import { blend, hexToRgb } from './color';
 import { InputNumberTypeObserver, InputTextTypeObserver } from './elementObserver';
+import {
+  download,
+  exampleCheckerboard,
+  exampleCircle,
+  exampleFill,
+  exampleRandom,
+  start,
+  stepAll,
+  stepOnce,
+  stop,
+} from './elements';
 import { drawCheckerboard, drawCircle, drawRandomly, fill } from './examples';
-import Grid from './grid';
+import Grid, { GridCoordinates } from './grid';
 import './style.css';
-
-const start = document.querySelector<HTMLButtonElement>('#start')!;
-const stop = document.querySelector<HTMLButtonElement>('#stop')!;
-const stepOnce = document.querySelector<HTMLButtonElement>('#stepOnce')!;
-const stepAll = document.querySelector<HTMLButtonElement>('#stepAll')!;
-const download = document.querySelector<HTMLButtonElement>('#download')!;
-const exampleCircle = document.querySelector<HTMLButtonElement>('#exampleCircle')!;
-const exampleFill = document.querySelector<HTMLButtonElement>('#exampleFill')!;
-const exampleCheckerboard = document.querySelector<HTMLButtonElement>('#exampleCheckerboard')!;
-const exampleRandom = document.querySelector<HTMLButtonElement>('#exampleRandom')!;
 
 const radius = new InputNumberTypeObserver('#radius', onRadiusChange).listen();
 const toppleThreshold = new InputNumberTypeObserver('#toppleThreshold', onToppleThresholdChange).listen();
@@ -22,73 +23,93 @@ const cellSize = new InputNumberTypeObserver('#cellSize', onCellSizeChange).list
 const cellColor = new InputTextTypeObserver('#cellColor', onCellColorChange).listen();
 const cellBackgroundColor = new InputTextTypeObserver('#cellBackgroundColor', onCellBackgroundColorChange).listen();
 
-let startAnimation = false;
-let numIterations = 0;
-let cellColorRgb = hexToRgb(cellColor.value);
-let cellBackgroundColorRgb = hexToRgb(cellBackgroundColor.value);
-const initialGridWidthInNumCells = 1 + 2 * radius.value;
-
-const canvas = new Canvas('#canvas');
-canvas.size = cellSize.value * initialGridWidthInNumCells;
-canvas.context.fillStyle = cellColor.value;
-
+const lastDrawnCell: { x: number | undefined; y: number | undefined } = { x: undefined, y: undefined };
 const mouseState = {
   isMouseDown: false,
   isMiddleClick: false,
   isRightClick: false,
 };
 
-const lastDrawnCell: { x: number | undefined; y: number | undefined } = { x: undefined, y: undefined };
+let startAnimation = false;
+let numIterations = 0;
+let cellColorRgb = hexToRgb(cellColor.value);
+let cellBackgroundColorRgb = hexToRgb(cellBackgroundColor.value);
 
-canvas.element.addEventListener('mousedown', (e: MouseEvent) => {
-  mouseState.isMouseDown = true;
-  mouseState.isMiddleClick = e.button === 1;
-  mouseState.isRightClick = e.button === 2;
+const grid = new Grid(radius.value, toppleThreshold.value, drawAtCoordinate, redraw);
+const canvas = getCanvas();
 
-  const { offsetX: x, offsetY: y } = e;
-  if (mouseState.isRightClick) {
-    clear(x, y);
-  } else if (mouseState.isMiddleClick) {
-    drawAtMouse(x, y, false, true);
-  } else {
-    drawAtMouse(x, y, true, true);
-  }
-});
+setupControlEvents();
+setupExampleEvents();
 
-canvas.element.onmouseup = () => {
-  mouseState.isMouseDown = false;
-};
+function setupControlEvents() {
+  start.onclick = () => {
+    numIterations = 0;
+    startAnimation = true;
+    start.disabled = true;
+    stop.disabled = false;
+    stepAll.disabled = true;
+    stepOnce.disabled = true;
+    radius.disabled = true;
+    requestLoop();
+  };
 
-canvas.element.onmousemove = (e: MouseEvent) => {
-  if (mouseState.isMouseDown) {
-    const { offsetX: x, offsetY: y } = e;
+  stop.onclick = () => {
+    startAnimation = false;
+    start.disabled = false;
+    stop.disabled = true;
+    stepAll.disabled = false;
+    stepOnce.disabled = false;
+    radius.disabled = false;
+  };
 
-    if (mouseState.isRightClick) {
-      clear(x, y);
-    } else if (mouseState.isMiddleClick) {
-      drawAtMouse(x, y, false);
-    } else {
-      drawAtMouse(x, y, true);
-    }
-  }
-};
+  stepOnce.onclick = () => {
+    grid.avalancheOnce();
+  };
 
-canvas.element.oncontextmenu = () => false;
+  stepAll.onclick = () => {
+    grid.avalancheOnceOverGrid();
+  };
 
-const drawAtCoordinate = (row: number, column: number, value: number) => {
+  download.onclick = () => {
+    const link = document.createElement('a');
+    link.download = `filename-${numIterations}.png`;
+    link.href = canvas.element.toDataURL();
+    link.click();
+  };
+}
+
+function setupExampleEvents() {
+  exampleCircle.onclick = () => {
+    grid.drawExample(drawCircle(grid.radius, maxCellGrains.value));
+  };
+
+  exampleFill.onclick = () => {
+    grid.drawExample(fill(maxCellGrains.value));
+  };
+
+  exampleCheckerboard.onclick = () => {
+    grid.drawExample(drawCheckerboard(maxCellGrains.value));
+  };
+
+  exampleRandom.onclick = () => {
+    grid.drawExample(drawRandomly(maxCellGrains.value));
+  };
+}
+
+function drawAtCoordinate(row: number, column: number, value: number) {
   const newCellColor = blend(
     cellBackgroundColorRgb,
     cellColorRgb,
     Math.min(value, toppleThreshold.value) / toppleThreshold.value
   );
 
-  canvas.context.fillStyle = newCellColor.color;
+  canvas.context.fillStyle = newCellColor;
 
-  const { x, y } = mapGridCoordinatesToCanvasCoordinates(row, column);
+  const { x, y } = mapGridCoordinatesToCanvasCoordinates({ row, column });
   canvas.context.fillRect(x, y, cellSize.value, cellSize.value);
-};
+}
 
-const redraw = (newRadius: number): void => {
+function redraw(newRadius: number) {
   canvas.size = cellSize.value * (1 + 2 * newRadius);
   canvas.context.clearRect(0, 0, canvas.size, canvas.size);
 
@@ -99,27 +120,26 @@ const redraw = (newRadius: number): void => {
       drawAtCoordinate(r, c, grid.getValueOrThrow(r, c));
     }
   }
-};
+}
 
-const grid = new Grid(radius.value, toppleThreshold.value, drawAtCoordinate, redraw);
-
-const mapCanvasCoordinatesToGridCoordinates = (x: number, y: number): { row: number; column: number } => {
-  const { radius } = grid;
-  const row = -radius + y / cellSize.value;
-  const column = -radius + x / cellSize.value;
+function mapCanvasCoordinatesToGridCoordinates(canvasCoordinates: CanvasCoordinates): GridCoordinates {
+  const row = -grid.radius + canvasCoordinates.y / cellSize.value;
+  const column = -grid.radius + canvasCoordinates.x / cellSize.value;
 
   return { row, column };
-};
+}
 
-const mapGridCoordinatesToCanvasCoordinates = (row: number, column: number): { x: number; y: number } => {
-  const { radius } = grid;
-  const x = (radius + column) * cellSize.value;
-  const y = (radius + row) * cellSize.value;
+function mapGridCoordinatesToCanvasCoordinates(gridCoordinates: GridCoordinates): CanvasCoordinates {
+  const x = (grid.radius + gridCoordinates.column) * cellSize.value;
+  const y = (grid.radius + gridCoordinates.row) * cellSize.value;
 
   return { x, y };
-};
+}
 
-const drawAtMouse = (x: number, y: number, increment: boolean, force = false) => {
+function drawAtMouse(input: { canvasCoordinates: CanvasCoordinates; increment: boolean; force: boolean }) {
+  const { canvasCoordinates, increment, force } = input;
+  let { x, y } = canvasCoordinates;
+
   if (cellSize.value > 1) {
     x = Math.floor(x / cellSize.value) * cellSize.value;
   }
@@ -135,9 +155,8 @@ const drawAtMouse = (x: number, y: number, increment: boolean, force = false) =>
   lastDrawnCell.x = x;
   lastDrawnCell.y = y;
 
-  const { row, column } = mapCanvasCoordinatesToGridCoordinates(x, y);
+  const { row, column } = mapCanvasCoordinatesToGridCoordinates({ x, y });
 
-  // TODO: Make this configurable.
   if (increment && grid.getValueOrThrow(row, column) >= maxCellGrains.value) {
     return;
   }
@@ -147,9 +166,11 @@ const drawAtMouse = (x: number, y: number, increment: boolean, force = false) =>
   } else {
     grid.decrementOrThrow(row, column);
   }
-};
+}
 
-const clear = (x: number, y: number) => {
+function clear(canvasCoordinates: CanvasCoordinates) {
+  let { x, y } = canvasCoordinates;
+
   if (cellSize.value > 1) {
     x = Math.floor(x / cellSize.value) * cellSize.value;
   }
@@ -158,65 +179,14 @@ const clear = (x: number, y: number) => {
     y = Math.floor(y / cellSize.value) * cellSize.value;
   }
 
-  const { row, column } = mapCanvasCoordinatesToGridCoordinates(x, y);
+  const { row, column } = mapCanvasCoordinatesToGridCoordinates({ x, y });
 
   grid.reset(row, column);
   canvas.context.fillStyle = cellBackgroundColor.value;
   canvas.context.fillRect(x, y, cellSize.value, cellSize.value);
-};
+}
 
-start.onclick = () => {
-  numIterations = 0;
-  startAnimation = true;
-  start.disabled = true;
-  stop.disabled = false;
-  stepAll.disabled = true;
-  stepOnce.disabled = true;
-  radius.disabled = true;
-  requestLoop();
-};
-
-stop.onclick = () => {
-  startAnimation = false;
-  start.disabled = false;
-  stop.disabled = true;
-  stepAll.disabled = false;
-  stepOnce.disabled = false;
-  radius.disabled = false;
-};
-
-stepOnce.onclick = () => {
-  grid.avalancheOnce();
-};
-
-stepAll.onclick = () => {
-  grid.avalancheOnceOverGrid();
-};
-
-download.onclick = () => {
-  const link = document.createElement('a');
-  link.download = `filename-${numIterations}.png`;
-  link.href = canvas.element.toDataURL();
-  link.click();
-};
-
-exampleCircle.onclick = () => {
-  grid.drawExample(drawCircle(grid.radius, maxCellGrains.value));
-};
-
-exampleFill.onclick = () => {
-  grid.drawExample(fill(maxCellGrains.value));
-};
-
-exampleCheckerboard.onclick = () => {
-  grid.drawExample(drawCheckerboard(maxCellGrains.value));
-};
-
-exampleRandom.onclick = () => {
-  grid.drawExample(drawRandomly(maxCellGrains.value));
-};
-
-const loop = () => {
+function loop() {
   if (!startAnimation) {
     return;
   }
@@ -231,11 +201,11 @@ const loop = () => {
   }
 
   requestLoop();
-};
+}
 
-const requestLoop = () => {
-  window.requestAnimationFrame(() => loop());
-};
+function requestLoop() {
+  window.requestAnimationFrame(loop);
+}
 
 function onRadiusChange(newRadius: number) {
   grid.maybeResize(newRadius);
@@ -247,8 +217,7 @@ function onToppleThresholdChange(newToppleThreshold: number) {
 }
 
 function onCellSizeChange(newCellSize: number) {
-  const initialGridWidthInNumCells = 1 + 2 * radius.value;
-  canvas.size = newCellSize * initialGridWidthInNumCells;
+  canvas.size = newCellSize * getGridSizeInNumCells();
   grid.redraw();
 }
 
@@ -260,4 +229,47 @@ function onCellColorChange() {
 function onCellBackgroundColorChange() {
   cellBackgroundColorRgb = hexToRgb(cellBackgroundColor.value);
   redraw(radius.value);
+}
+
+function getGridSizeInNumCells(): number {
+  return 1 + 2 * radius.value;
+}
+
+function getCanvas() {
+  const canvas = new Canvas('#canvas');
+  canvas.size = cellSize.value * getGridSizeInNumCells();
+  canvas.context.fillStyle = cellColor.value;
+
+  canvas.element.addEventListener('mousedown', (e: MouseEvent) => {
+    mouseState.isMouseDown = true;
+    mouseState.isMiddleClick = e.button === 1;
+    mouseState.isRightClick = e.button === 2;
+
+    const { offsetX: x, offsetY: y } = e;
+    if (mouseState.isRightClick) {
+      clear({ x, y });
+    } else {
+      drawAtMouse({ canvasCoordinates: { x, y }, increment: !mouseState.isMiddleClick, force: true });
+    }
+  });
+
+  canvas.element.onmouseup = () => {
+    mouseState.isMouseDown = false;
+  };
+
+  canvas.element.onmousemove = (e: MouseEvent) => {
+    if (mouseState.isMouseDown) {
+      const { offsetX: x, offsetY: y } = e;
+
+      if (mouseState.isRightClick) {
+        clear({ x, y });
+      } else {
+        drawAtMouse({ canvasCoordinates: { x, y }, increment: !mouseState.isMiddleClick, force: false });
+      }
+    }
+  };
+
+  canvas.element.oncontextmenu = () => false;
+
+  return canvas;
 }

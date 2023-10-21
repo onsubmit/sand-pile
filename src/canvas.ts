@@ -1,3 +1,5 @@
+export type CanvasCoordinates = { x: number; y: number };
+
 export default class Canvas {
   #canvas: HTMLCanvasElement;
   #context: CanvasRenderingContext2D;
