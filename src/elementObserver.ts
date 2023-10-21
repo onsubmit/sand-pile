@@ -3,12 +3,12 @@ export type SetElementValue<TElement, TValue> = (element: TElement, value: TValu
 export type OnElementValueChange<TValue> = (newValue: TValue) => void;
 
 class ElementObserver<TElement extends HTMLInputElement, TValue> {
-  private _element: TElement;
-  private _listening = false;
-  private _value: TValue;
-  private _getElementValue: GetElementValue<TElement, TValue>;
-  private _setElementValue: SetElementValue<TElement, TValue>;
-  private _onChange?: OnElementValueChange<TValue>;
+  #element: TElement;
+  #listening = false;
+  #value: TValue;
+  #getElementValue: GetElementValue<TElement, TValue>;
+  #setElementValue: SetElementValue<TElement, TValue>;
+  #onChange?: OnElementValueChange<TValue>;
 
   constructor(
     selector: string,
@@ -21,41 +21,41 @@ class ElementObserver<TElement extends HTMLInputElement, TValue> {
       throw new Error(`Element with selector <${selector}> not found.`);
     }
 
-    this._element = element;
-    this._value = getElementValue(this._element);
-    this._getElementValue = getElementValue;
-    this._setElementValue = setElementValue;
-    this._onChange = onChange;
+    this.#element = element;
+    this.#value = getElementValue(this.#element);
+    this.#getElementValue = getElementValue;
+    this.#setElementValue = setElementValue;
+    this.#onChange = onChange;
   }
 
   get value(): TValue {
-    return this._value;
+    return this.#value;
   }
 
   set value(v: TValue) {
-    this._value = v;
-    this._setElementValue(this._element, v);
+    this.#value = v;
+    this.#setElementValue(this.#element, v);
   }
 
   get disabled(): boolean {
-    return this._element.disabled;
+    return this.#element.disabled;
   }
 
   set disabled(v: boolean) {
-    this._element.disabled = v;
+    this.#element.disabled = v;
   }
 
   listen = (): this => {
-    if (this._listening) {
+    if (this.#listening) {
       throw new Error('ElementObserver already initialized');
     }
 
-    this._element.onchange = () => {
-      this._value = this._getElementValue(this._element);
-      this._onChange?.(this._value);
+    this.#element.onchange = () => {
+      this.#value = this.#getElementValue(this.#element);
+      this.#onChange?.(this.#value);
     };
 
-    this._listening = true;
+    this.#listening = true;
     return this;
   };
 }

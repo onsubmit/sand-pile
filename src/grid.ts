@@ -5,35 +5,35 @@ export type ResizeCallback = (newRadius: number) => void;
 export type DrawExampleFn = (row: number, column: number, gridRadius: number) => number;
 
 export default class Grid {
-  private _grid: DictionaryGrid<number>;
-  private _toppleThreshold: number;
-  private _drawCallback: DrawCallback;
-  private _resizeCallback: ResizeCallback;
+  #grid: DictionaryGrid<number>;
+  #toppleThreshold: number;
+  #drawCallback: DrawCallback;
+  #resizeCallback: ResizeCallback;
 
   constructor(radius: number, toppleThreshold: number, drawCallback: DrawCallback, resizeCallback: ResizeCallback) {
-    this._grid = new DictionaryGrid<number>(radius, 0);
-    this._toppleThreshold = toppleThreshold;
-    this._drawCallback = drawCallback;
-    this._resizeCallback = resizeCallback;
+    this.#grid = new DictionaryGrid<number>(radius, 0);
+    this.#toppleThreshold = toppleThreshold;
+    this.#drawCallback = drawCallback;
+    this.#resizeCallback = resizeCallback;
   }
 
   get radius(): number {
-    return this._grid.radius;
+    return this.#grid.radius;
   }
 
   get toppleThreshold(): number {
-    return this._toppleThreshold;
+    return this.#toppleThreshold;
   }
 
   set toppleThreshold(value: number) {
-    this._toppleThreshold = value;
+    this.#toppleThreshold = value;
   }
 
   redraw = () => {
     for (let row = -this.radius; row <= this.radius; row++) {
       for (let column = -this.radius; column <= this.radius; column++) {
-        const value = this._grid.getOrThrow(row, column);
-        this._drawCallback(row, column, value);
+        const value = this.#grid.getOrThrow(row, column);
+        this.#drawCallback(row, column, value);
       }
     }
   };
@@ -54,8 +54,8 @@ export default class Grid {
     }
 
     const newValue = element - amount;
-    this._grid.setOrThrow(row, column, newValue);
-    this._drawCallback(row, column, newValue);
+    this.#grid.setOrThrow(row, column, newValue);
+    this.#drawCallback(row, column, newValue);
 
     return newValue;
   };
@@ -68,7 +68,7 @@ export default class Grid {
     this.setValueOrThrow(row, column, newValue);
 
     if (didResize) {
-      this._resizeCallback(this.radius);
+      this.#resizeCallback(this.radius);
     }
 
     return newValue;
@@ -78,8 +78,8 @@ export default class Grid {
     const element = this.getValueOrThrow(row, column);
 
     const newValue = element + amount;
-    this._grid.setOrThrow(row, column, newValue);
-    this._drawCallback(row, column, newValue);
+    this.#grid.setOrThrow(row, column, newValue);
+    this.#drawCallback(row, column, newValue);
 
     return newValue;
   };
@@ -87,7 +87,7 @@ export default class Grid {
   avalancheOnce = () => {
     for (let row = -this.radius; row <= this.radius; row++) {
       for (let column = -this.radius; column <= this.radius; column++) {
-        if (this.getValueOrThrow(row, column) >= this._toppleThreshold) {
+        if (this.getValueOrThrow(row, column) >= this.#toppleThreshold) {
           this.avalancheAtCoordinate(row, column);
           return;
         }
@@ -99,7 +99,7 @@ export default class Grid {
     const coordinatesRequiringAvalanche: Array<{ row: number; column: number }> = [];
     for (let row = -this.radius; row <= this.radius; row++) {
       for (let column = -this.radius; column <= this.radius; column++) {
-        if (this.getValueOrThrow(row, column) >= this._toppleThreshold) {
+        if (this.getValueOrThrow(row, column) >= this.#toppleThreshold) {
           coordinatesRequiringAvalanche.push({ row, column });
         }
       }
@@ -128,7 +128,7 @@ export default class Grid {
       if (newValue !== undefined) {
         this.decrementOrThrow(row, column);
 
-        if (newValue >= this._toppleThreshold) {
+        if (newValue >= this.#toppleThreshold) {
           coordinatesRequiringAvalanche.add(`${cellRow},${cellColumn}`);
         }
       }
@@ -160,9 +160,9 @@ export default class Grid {
     this.setValueOrThrow(row, column, 0);
   };
 
-  maybeResize = (newRadius: number) => this._grid.maybeResize(newRadius);
+  maybeResize = (newRadius: number) => this.#grid.maybeResize(newRadius);
 
-  getValueOrThrow = (row: number, column: number): number => this._grid.getOrThrow(row, column);
+  getValueOrThrow = (row: number, column: number): number => this.#grid.getOrThrow(row, column);
 
   // getValueMaybeResize = (row: number, column: number): ValueAndDidResize<number> =>
   //   this._grid.getMaybeResize(row, column);
@@ -177,7 +177,7 @@ export default class Grid {
   // };
 
   private setValueOrThrow = (row: number, column: number, value: number): void => {
-    this._grid.setOrThrow(row, column, value);
-    this._drawCallback(row, column, value);
+    this.#grid.setOrThrow(row, column, value);
+    this.#drawCallback(row, column, value);
   };
 }
