@@ -1,32 +1,28 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sand Pile</title>
-  </head>
-  <body>
-    <div class="app">
-      <div class="controls">
-        <button id="start">Start ▶️</button>
-        <button id="stop" disabled>Stop ⏹️</button>
-        <button id="stepOnce">Step Once ⏯️</button>
-        <button id="stepAll">Step All ⏭️</button>
-        <button id="download">Download ⬇️</button>
-      </div>
 
-      <canvas id="canvas"></canvas>
-      <div class="examples">
-        <span>Examples</span>
-        <button id="exampleCircle">Circle</button>
-        <button id="exampleFill">Fill</button>
-        <button id="exampleRandom">Random</button>
-      </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sand Pile</title>
+</head>
+
+<body>
+  <div class="app">
+    <div class="left">
       <div class="config">
-        <span>Config</span>
+        <h3>Config</h3>
         <label>
           <span>Radius:</span>
           <input id="radius" type="number" value="10" min="2" max="100"></input>
+        </label>
+        <label>
+          <span>Topple Threshold:</span>
+          <input id="toppleThreshold" type="number" value="4" min="4" max="256"></input>
+        </label>
+        <label>
+          <span>Max Cell Grains:</span>
+          <input id="maxCellGrains" type="number" value="4" min="4" max="256"></input>
         </label>
         <label>
           <span>Cell Size:</span>
@@ -41,8 +37,26 @@
           <input id="cellBackgroundColor" type="color" value="#242424"></input>
         </label>
       </div>
+      <div class="examples">
+        <h3>Examples</h3>
+        <button id="exampleCircle">Circle</button>
+        <button id="exampleFill">Fill</button>
+        <button id="exampleRandom">Random</button>
+      </div>
     </div>
+    <div class="main">
+      <div class="controls">
+        <button id="start">Start ▶️</button>
+        <button id="stop" disabled>Stop ⏹️</button>
+        <button id="stepOnce">Step Once ⏯️</button>
+        <button id="stepAll">Step All ⏭️</button>
+        <button id="download">Download ⬇️</button>
+      </div>
+      <canvas id="canvas"></canvas>
+    </div>
+  </div>
 
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
 </html>

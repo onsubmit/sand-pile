@@ -20,15 +20,59 @@ body {
   width: 100vw;
   height: 100vh;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  flex-direction: row;
+  gap: 10px;
+  justify-content: flex-start;
   align-items: center;
 }
 
-.controls,
-.examples,
+.main {
+  display: flex;
+  flex-grow: 0;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  height: 100vh;
+}
+
 .config {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.config label {
   display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.config span {
+  width: 180px;
+  display: inline-flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.config input {
+  width: 40px;
+}
+
+.examples {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+}
+
+.controls {
+  display: inline-flex;
+  flex-direction: row;
   gap: 6px;
   padding: 6px;
 }

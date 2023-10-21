@@ -20,6 +20,8 @@ const exampleCircle = document.querySelector<HTMLButtonElement>('#exampleCircle'
 const exampleFill = document.querySelector<HTMLButtonElement>('#exampleFill')!;
 const exampleRandom = document.querySelector<HTMLButtonElement>('#exampleRandom')!;
 const radius = document.querySelector<HTMLInputElement>('#radius')!;
+const toppleThresholdEl = document.querySelector<HTMLInputElement>('#toppleThreshold')!;
+const maxCellGrainsEl = document.querySelector<HTMLInputElement>('#maxCellGrains')!;
 const cellSizeEl = document.querySelector<HTMLInputElement>('#cellSize')!;
 const cellColorEl = document.querySelector<HTMLInputElement>('#cellColor')!;
 const cellBackgroundColorEl = document.querySelector<HTMLInputElement>('#cellBackgroundColor')!;
@@ -31,6 +33,8 @@ if (!context) {
 
 let startAnimation = false;
 let numIterations = 0;
+let toppleThreshold = toppleThresholdEl.valueAsNumber;
+let maxCellGrains = maxCellGrainsEl.valueAsNumber;
 let cellSize = cellSizeEl.valueAsNumber;
 let cellColor = cellColorEl.value;
 let cellColorRgb = hexToRgb(cellColor);
@@ -43,11 +47,7 @@ canvas.height = cellSize * initialGridWidthInNumCells;
 context.fillStyle = cellColor;
 
 const drawAtCoordinate = (row: number, column: number, value: number) => {
-  const newCellColor = blend(
-    cellBackgroundColorRgb,
-    cellColorRgb,
-    Math.min(value, config.maxStackSize) / config.maxStackSize
-  );
+  const newCellColor = blend(cellBackgroundColorRgb, cellColorRgb, Math.min(value, toppleThreshold) / toppleThreshold);
 
   context.fillStyle = newCellColor.color;
 
@@ -70,7 +70,7 @@ const redraw = (newRadius: number): void => {
   }
 };
 
-const grid = new Grid(radius.valueAsNumber, config.maxStackSize, drawAtCoordinate, redraw);
+const grid = new Grid(radius.valueAsNumber, toppleThreshold, drawAtCoordinate, redraw);
 
 const mapCanvasCoordinatesToGridCoordinates = (x: number, y: number): { row: number; column: number } => {
   const { radius } = grid;
@@ -107,7 +107,7 @@ const drawAtMouse = (x: number, y: number, increment: boolean, force = false) =>
   const { row, column } = mapCanvasCoordinatesToGridCoordinates(x, y);
 
   // TODO: Make this configurable.
-  if (increment && grid.getValueOrThrow(row, column) >= config.maxStackSize) {
+  if (increment && grid.getValueOrThrow(row, column) >= maxCellGrains) {
     return;
   }
 
@@ -218,21 +218,29 @@ download.onclick = () => {
 };
 
 exampleCircle.onclick = () => {
-  // TODO: Make the maxValue configurable.
-  grid.drawExample(drawCircle(grid.radius, grid.maxValue));
+  grid.drawExample(drawCircle(grid.radius, grid.toppleThreshold));
 };
 
 exampleFill.onclick = () => {
-  grid.drawExample(fill(grid.maxValue));
+  grid.drawExample(fill(maxCellGrains));
 };
 
 exampleRandom.onclick = () => {
-  grid.drawExample(drawRandomly(grid.maxValue));
+  grid.drawExample(drawRandomly(maxCellGrains));
 };
 
 radius.onchange = () => {
   grid.maybeResize(radius.valueAsNumber);
   redraw(radius.valueAsNumber);
+};
+
+toppleThresholdEl.onchange = () => {
+  toppleThreshold = toppleThresholdEl.valueAsNumber;
+  grid.toppleThreshold = toppleThreshold;
+};
+
+maxCellGrainsEl.onchange = () => {
+  maxCellGrains = maxCellGrainsEl.valueAsNumber;
 };
 
 cellSizeEl.onchange = () => {

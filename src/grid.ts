@@ -6,13 +6,13 @@ export type DrawExampleFn = (row: number, column: number) => number;
 
 export default class Grid {
   private _grid: DictionaryGrid<number>;
-  private _maxValue: number;
+  private _toppleThreshold: number;
   private _drawCallback: DrawCallback;
   private _resizeCallback: ResizeCallback;
 
-  constructor(radius: number, maxValue: number, drawCallback: DrawCallback, resizeCallback: ResizeCallback) {
+  constructor(radius: number, toppleThreshold: number, drawCallback: DrawCallback, resizeCallback: ResizeCallback) {
     this._grid = new DictionaryGrid<number>(radius, 0);
-    this._maxValue = maxValue;
+    this._toppleThreshold = toppleThreshold;
     this._drawCallback = drawCallback;
     this._resizeCallback = resizeCallback;
   }
@@ -21,8 +21,12 @@ export default class Grid {
     return this._grid.radius;
   }
 
-  get maxValue(): number {
-    return this._maxValue;
+  get toppleThreshold(): number {
+    return this._toppleThreshold;
+  }
+
+  set toppleThreshold(value: number) {
+    this._toppleThreshold = value;
   }
 
   redraw = () => {
@@ -73,10 +77,6 @@ export default class Grid {
   incrementOrThrow = (row: number, column: number, amount = 1): number => {
     const element = this.getValueOrThrow(row, column);
 
-    if (element === this._maxValue) {
-      return this._maxValue;
-    }
-
     const newValue = element + amount;
     this._grid.setOrThrow(row, column, newValue);
     this._drawCallback(row, column, newValue);
@@ -87,7 +87,7 @@ export default class Grid {
   avalancheOnce = () => {
     for (let row = -this.radius; row <= this.radius; row++) {
       for (let column = -this.radius; column <= this.radius; column++) {
-        if (this.getValueOrThrow(row, column) >= this._maxValue) {
+        if (this.getValueOrThrow(row, column) >= this._toppleThreshold) {
           this.avalancheAtCoordinate(row, column);
           return;
         }
@@ -99,7 +99,7 @@ export default class Grid {
     const coordinatesRequiringAvalanche: Array<{ row: number; column: number }> = [];
     for (let row = -this.radius; row <= this.radius; row++) {
       for (let column = -this.radius; column <= this.radius; column++) {
-        if (this.getValueOrThrow(row, column) >= this._maxValue) {
+        if (this.getValueOrThrow(row, column) >= this._toppleThreshold) {
           coordinatesRequiringAvalanche.push({ row, column });
         }
       }
@@ -128,7 +128,7 @@ export default class Grid {
       if (newValue !== undefined) {
         this.decrementOrThrow(row, column);
 
-        if (newValue >= this._maxValue) {
+        if (newValue >= this._toppleThreshold) {
           coordinatesRequiringAvalanche.add(`${cellRow},${cellColumn}`);
         }
       }
