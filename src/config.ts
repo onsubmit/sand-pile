@@ -1,6 +1,6 @@
 export default class Config {
   private static readonly MIN_CELL_SIZE = 3;
-  private static readonly DEFAULT_CELL_SIZE = 50;
+  private static readonly DEFAULT_CELL_SIZE = 20;
   private static readonly DEFAULT_CELL_COLOR = '#ffffff';
   private static readonly DEFAULT_CELL_BACKGROUND_COLOR = '#242424';
   private static readonly MIN_MAX_STACK_SIZE = 4;
