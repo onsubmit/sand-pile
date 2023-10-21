@@ -1,4 +1,5 @@
 import { blend, hexToRgb } from './color';
+import { InputNumberTypeObserver, InputTextTypeObserver } from './elementObserver';
 import { drawCheckerboard, drawCircle, drawRandomly, fill } from './examples';
 import Grid from './grid';
 import './style.css';
@@ -13,12 +14,13 @@ const exampleCircle = document.querySelector<HTMLButtonElement>('#exampleCircle'
 const exampleFill = document.querySelector<HTMLButtonElement>('#exampleFill')!;
 const exampleCheckerboard = document.querySelector<HTMLButtonElement>('#exampleCheckerboard')!;
 const exampleRandom = document.querySelector<HTMLButtonElement>('#exampleRandom')!;
-const radius = document.querySelector<HTMLInputElement>('#radius')!;
-const toppleThresholdEl = document.querySelector<HTMLInputElement>('#toppleThreshold')!;
-const maxCellGrainsEl = document.querySelector<HTMLInputElement>('#maxCellGrains')!;
-const cellSizeEl = document.querySelector<HTMLInputElement>('#cellSize')!;
-const cellColorEl = document.querySelector<HTMLInputElement>('#cellColor')!;
-const cellBackgroundColorEl = document.querySelector<HTMLInputElement>('#cellBackgroundColor')!;
+
+const radius = new InputNumberTypeObserver('#radius', onRadiusChange).listen();
+const toppleThreshold = new InputNumberTypeObserver('#toppleThreshold', onToppleThresholdChange).listen();
+const maxCellGrains = new InputNumberTypeObserver('#maxCellGrains').listen();
+const cellSize = new InputNumberTypeObserver('#cellSize', onCellSizeChange).listen();
+const cellColor = new InputTextTypeObserver('#cellColor', onCellColorChange).listen();
+const cellBackgroundColor = new InputTextTypeObserver('#cellBackgroundColor', onCellBackgroundColorChange).listen();
 
 const context = canvas.getContext('2d');
 if (!context) {
@@ -27,39 +29,38 @@ if (!context) {
 
 let startAnimation = false;
 let numIterations = 0;
-let toppleThreshold = toppleThresholdEl.valueAsNumber;
-let maxCellGrains = maxCellGrainsEl.valueAsNumber;
-let cellSize = cellSizeEl.valueAsNumber;
-let cellColor = cellColorEl.value;
-let cellColorRgb = hexToRgb(cellColor);
-let cellBackgroundColor = cellBackgroundColorEl.value;
-let cellBackgroundColorRgb = hexToRgb(cellBackgroundColor);
-const initialGridWidthInNumCells = 1 + 2 * radius.valueAsNumber;
+let cellColorRgb = hexToRgb(cellColor.value);
+let cellBackgroundColorRgb = hexToRgb(cellBackgroundColor.value);
+const initialGridWidthInNumCells = 1 + 2 * radius.value;
 
-canvas.width = cellSize * initialGridWidthInNumCells;
-canvas.height = cellSize * initialGridWidthInNumCells;
+canvas.width = cellSize.value * initialGridWidthInNumCells;
+canvas.height = cellSize.value * initialGridWidthInNumCells;
 canvas.style.width = `${canvas.width}px`;
 canvas.style.height = `${canvas.height}px`;
-context.fillStyle = cellColor;
+context.fillStyle = cellColor.value;
 
 const drawAtCoordinate = (row: number, column: number, value: number) => {
-  const newCellColor = blend(cellBackgroundColorRgb, cellColorRgb, Math.min(value, toppleThreshold) / toppleThreshold);
+  const newCellColor = blend(
+    cellBackgroundColorRgb,
+    cellColorRgb,
+    Math.min(value, toppleThreshold.value) / toppleThreshold.value
+  );
 
   context.fillStyle = newCellColor.color;
 
   const { x, y } = mapGridCoordinatesToCanvasCoordinates(row, column);
-  context.fillRect(x, y, cellSize, cellSize);
+  context.fillRect(x, y, cellSize.value, cellSize.value);
 };
 
 const redraw = (newRadius: number): void => {
-  canvas.width = cellSize * (1 + 2 * newRadius);
-  canvas.height = cellSize * (1 + 2 * newRadius);
+  canvas.width = cellSize.value * (1 + 2 * newRadius);
+  canvas.height = cellSize.value * (1 + 2 * newRadius);
   canvas.style.width = `${canvas.width}px`;
   canvas.style.height = `${canvas.height}px`;
 
   context.clearRect(0, 0, canvas.width, canvas.height);
 
-  radius.valueAsNumber = newRadius;
+  radius.value = newRadius;
 
   for (let r = -newRadius; r <= newRadius; r++) {
     for (let c = -newRadius; c <= newRadius; c++) {
@@ -68,31 +69,31 @@ const redraw = (newRadius: number): void => {
   }
 };
 
-const grid = new Grid(radius.valueAsNumber, toppleThreshold, drawAtCoordinate, redraw);
+const grid = new Grid(radius.value, toppleThreshold.value, drawAtCoordinate, redraw);
 
 const mapCanvasCoordinatesToGridCoordinates = (x: number, y: number): { row: number; column: number } => {
   const { radius } = grid;
-  const row = -radius + y / cellSize;
-  const column = -radius + x / cellSize;
+  const row = -radius + y / cellSize.value;
+  const column = -radius + x / cellSize.value;
 
   return { row, column };
 };
 
 const mapGridCoordinatesToCanvasCoordinates = (row: number, column: number): { x: number; y: number } => {
   const { radius } = grid;
-  const x = (radius + column) * cellSize;
-  const y = (radius + row) * cellSize;
+  const x = (radius + column) * cellSize.value;
+  const y = (radius + row) * cellSize.value;
 
   return { x, y };
 };
 
 const drawAtMouse = (x: number, y: number, increment: boolean, force = false) => {
-  if (cellSize > 1) {
-    x = Math.floor(x / cellSize) * cellSize;
+  if (cellSize.value > 1) {
+    x = Math.floor(x / cellSize.value) * cellSize.value;
   }
 
-  if (cellSize > 1) {
-    y = Math.floor(y / cellSize) * cellSize;
+  if (cellSize.value > 1) {
+    y = Math.floor(y / cellSize.value) * cellSize.value;
   }
 
   if (!force && x === lastDrawnCell.x && y === lastDrawnCell.y) {
@@ -105,7 +106,7 @@ const drawAtMouse = (x: number, y: number, increment: boolean, force = false) =>
   const { row, column } = mapCanvasCoordinatesToGridCoordinates(x, y);
 
   // TODO: Make this configurable.
-  if (increment && grid.getValueOrThrow(row, column) >= maxCellGrains) {
+  if (increment && grid.getValueOrThrow(row, column) >= maxCellGrains.value) {
     return;
   }
 
@@ -117,19 +118,19 @@ const drawAtMouse = (x: number, y: number, increment: boolean, force = false) =>
 };
 
 const clear = (x: number, y: number) => {
-  if (cellSize > 1) {
-    x = Math.floor(x / cellSize) * cellSize;
+  if (cellSize.value > 1) {
+    x = Math.floor(x / cellSize.value) * cellSize.value;
   }
 
-  if (cellSize > 1) {
-    y = Math.floor(y / cellSize) * cellSize;
+  if (cellSize.value > 1) {
+    y = Math.floor(y / cellSize.value) * cellSize.value;
   }
 
   const { row, column } = mapCanvasCoordinatesToGridCoordinates(x, y);
 
   grid.reset(row, column);
-  context.fillStyle = cellBackgroundColor;
-  context.fillRect(x, y, cellSize, cellSize);
+  context.fillStyle = cellBackgroundColor.value;
+  context.fillRect(x, y, cellSize.value, cellSize.value);
 };
 
 let isMouseDown = false;
@@ -211,56 +212,19 @@ download.onclick = () => {
 };
 
 exampleCircle.onclick = () => {
-  grid.drawExample(drawCircle(grid.radius, maxCellGrains));
+  grid.drawExample(drawCircle(grid.radius, maxCellGrains.value));
 };
 
 exampleFill.onclick = () => {
-  grid.drawExample(fill(maxCellGrains));
+  grid.drawExample(fill(maxCellGrains.value));
 };
 
 exampleCheckerboard.onclick = () => {
-  grid.drawExample(drawCheckerboard(maxCellGrains));
+  grid.drawExample(drawCheckerboard(maxCellGrains.value));
 };
 
 exampleRandom.onclick = () => {
-  grid.drawExample(drawRandomly(maxCellGrains));
-};
-
-radius.onchange = () => {
-  grid.maybeResize(radius.valueAsNumber);
-  redraw(radius.valueAsNumber);
-};
-
-toppleThresholdEl.onchange = () => {
-  toppleThreshold = toppleThresholdEl.valueAsNumber;
-  grid.toppleThreshold = toppleThreshold;
-};
-
-maxCellGrainsEl.onchange = () => {
-  maxCellGrains = maxCellGrainsEl.valueAsNumber;
-};
-
-cellSizeEl.onchange = () => {
-  cellSize = cellSizeEl.valueAsNumber;
-  const initialGridWidthInNumCells = 1 + 2 * radius.valueAsNumber;
-
-  canvas.width = cellSize * initialGridWidthInNumCells;
-  canvas.height = cellSize * initialGridWidthInNumCells;
-  canvas.style.width = `${canvas.width}px`;
-  canvas.style.height = `${canvas.height}px`;
-  grid.redraw();
-};
-
-cellColorEl.onchange = () => {
-  cellColor = cellColorEl.value;
-  cellColorRgb = hexToRgb(cellColor);
-  redraw(radius.valueAsNumber);
-};
-
-cellBackgroundColorEl.onchange = () => {
-  cellBackgroundColor = cellBackgroundColorEl.value;
-  cellBackgroundColorRgb = hexToRgb(cellBackgroundColor);
-  redraw(radius.valueAsNumber);
+  grid.drawExample(drawRandomly(maxCellGrains.value));
 };
 
 const loop = () => {
@@ -283,3 +247,32 @@ const loop = () => {
 const requestLoop = () => {
   window.requestAnimationFrame(() => loop());
 };
+
+function onRadiusChange(newRadius: number) {
+  grid.maybeResize(newRadius);
+  redraw(newRadius);
+}
+
+function onToppleThresholdChange(newToppleThreshold: number) {
+  grid.toppleThreshold = newToppleThreshold;
+}
+
+function onCellSizeChange(newCellSize: number) {
+  const initialGridWidthInNumCells = 1 + 2 * radius.value;
+
+  canvas.width = newCellSize * initialGridWidthInNumCells;
+  canvas.height = newCellSize * initialGridWidthInNumCells;
+  canvas.style.width = `${canvas.width}px`;
+  canvas.style.height = `${canvas.height}px`;
+  grid.redraw();
+}
+
+function onCellColorChange() {
+  cellColorRgb = hexToRgb(cellColor.value);
+  redraw(radius.value);
+}
+
+function onCellBackgroundColorChange() {
+  cellBackgroundColorRgb = hexToRgb(cellBackgroundColor.value);
+  redraw(radius.value);
+}
