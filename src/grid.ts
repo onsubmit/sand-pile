@@ -164,18 +164,6 @@ export default class Grid {
 
   getValueOrThrow = (row: number, column: number): number => this.#grid.getOrThrow(row, column);
 
-  // getValueMaybeResize = (row: number, column: number): ValueAndDidResize<number> =>
-  //   this._grid.getMaybeResize(row, column);
-
-  // private setValueMaybeResize = (row: number, column: number, value: number): void => {
-  //   const didResize = this._grid.setMaybeResize(row, column, value);
-  //   this._drawCallback(row, column, value);
-
-  //   if (didResize) {
-  //     this._resizeCallback(this.radius);
-  //   }
-  // };
-
   private setValueOrThrow = (row: number, column: number, value: number): void => {
     this.#grid.setOrThrow(row, column, value);
     this.#drawCallback(row, column, value);
