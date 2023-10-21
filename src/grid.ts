@@ -1,20 +1,20 @@
-import DictionaryGrid, { ValueAndDidExpand } from './dictionaryGrid';
+import DictionaryGrid from './dictionaryGrid';
 
 export type DrawCallback = (row: number, column: number, value: number) => void;
-export type ExpandCallback = (newRadius: number) => void;
+export type ResizeCallback = (newRadius: number) => void;
 export type DrawExampleFn = (row: number, column: number) => number;
 
 export default class Grid {
   private _grid: DictionaryGrid<number>;
   private _maxValue: number;
   private _drawCallback: DrawCallback;
-  private _expandCallback: ExpandCallback;
+  private _resizeCallback: ResizeCallback;
 
-  constructor(radius: number, maxValue: number, drawCallback: DrawCallback, expandCallback: ExpandCallback) {
+  constructor(radius: number, maxValue: number, drawCallback: DrawCallback, resizeCallback: ResizeCallback) {
     this._grid = new DictionaryGrid<number>(radius, 0);
     this._maxValue = maxValue;
     this._drawCallback = drawCallback;
-    this._expandCallback = expandCallback;
+    this._resizeCallback = resizeCallback;
   }
 
   get radius(): number {
@@ -47,14 +47,15 @@ export default class Grid {
     return newValue;
   };
 
-  incrementMaybeExpand = (row: number, column: number): number | undefined => {
-    const { value, didExpand } = this.getValueMaybeExpand(row, column);
+  incrementMaybeResize = (row: number, column: number): number | undefined => {
+    const didResize = this.maybeResize(Math.max(this.radius, Math.abs(row), Math.abs(column)));
+    const value = this.getValueOrThrow(row, column);
 
     const newValue = value + 1;
-    this.setValueMaybeExpand(row, column, newValue);
+    this.setValueOrThrow(row, column, newValue);
 
-    if (didExpand) {
-      this._expandCallback(this.radius);
+    if (didResize) {
+      this._resizeCallback(this.radius);
     }
 
     return newValue;
@@ -114,7 +115,7 @@ export default class Grid {
     for (const coordinates of cardinalBorderCoordinates) {
       const [cellRow, cellColumn] = coordinates;
 
-      const newValue = this.incrementMaybeExpand(cellRow, cellColumn);
+      const newValue = this.incrementMaybeResize(cellRow, cellColumn);
       if (newValue !== undefined) {
         this.decrementOrThrow(row, column);
 
@@ -150,19 +151,21 @@ export default class Grid {
     this.setValueOrThrow(row, column, 0);
   };
 
+  maybeResize = (newRadius: number) => this._grid.maybeResize(newRadius);
+
   getValueOrThrow = (row: number, column: number): number => this._grid.getOrThrow(row, column);
 
-  private getValueMaybeExpand = (row: number, column: number): ValueAndDidExpand<number> =>
-    this._grid.getMaybeExpand(row, column);
+  // getValueMaybeResize = (row: number, column: number): ValueAndDidResize<number> =>
+  //   this._grid.getMaybeResize(row, column);
 
-  private setValueMaybeExpand = (row: number, column: number, value: number): void => {
-    const didExpand = this._grid.setMaybeExpand(row, column, value);
-    this._drawCallback(row, column, value);
+  // private setValueMaybeResize = (row: number, column: number, value: number): void => {
+  //   const didResize = this._grid.setMaybeResize(row, column, value);
+  //   this._drawCallback(row, column, value);
 
-    if (didExpand) {
-      this._expandCallback(this.radius);
-    }
-  };
+  //   if (didResize) {
+  //     this._resizeCallback(this.radius);
+  //   }
+  // };
 
   private setValueOrThrow = (row: number, column: number, value: number): void => {
     this._grid.setOrThrow(row, column, value);

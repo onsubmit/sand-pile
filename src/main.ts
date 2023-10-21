@@ -22,7 +22,7 @@ const examples = document.querySelector<HTMLButtonElement>('.examples')!;
 const exampleCircle = document.querySelector<HTMLButtonElement>('#exampleCircle')!;
 const exampleFill = document.querySelector<HTMLButtonElement>('#exampleFill')!;
 const exampleRandom = document.querySelector<HTMLButtonElement>('#exampleRandom')!;
-const iterations = document.querySelector<HTMLSpanElement>('#iterations')!;
+const radius = document.querySelector<HTMLInputElement>('#radius')!;
 
 const context = canvas.getContext('2d');
 if (!context) {
@@ -32,7 +32,7 @@ if (!context) {
 let startAnimation = false;
 let numIterations = 0;
 const cellSize = config.cellSize;
-const initialGridWidthInNumCells = 1 + 2 * config.radius;
+const initialGridWidthInNumCells = 1 + 2 * radius.valueAsNumber;
 
 canvas.width = cellSize * initialGridWidthInNumCells;
 canvas.height = cellSize * initialGridWidthInNumCells;
@@ -57,11 +57,13 @@ const drawAtCoordinate = (row: number, column: number, value: number) => {
   }
 };
 
-const expandGrid = (newRadius: number) => {
+const redrawAfterResize = (newRadius: number): void => {
   canvas.width = cellSize * (1 + 2 * newRadius);
   canvas.height = cellSize * (1 + 2 * newRadius);
 
   context.clearRect(0, 0, canvas.width, canvas.height);
+
+  radius.valueAsNumber = newRadius;
 
   for (let r = -newRadius; r <= newRadius; r++) {
     for (let c = -newRadius; c <= newRadius; c++) {
@@ -70,7 +72,7 @@ const expandGrid = (newRadius: number) => {
   }
 };
 
-const grid = new Grid(config.radius, config.maxStackSize, drawAtCoordinate, expandGrid);
+const grid = new Grid(radius.valueAsNumber, config.maxStackSize, drawAtCoordinate, redrawAfterResize);
 
 const mapCanvasCoordinatesToGridCoordinates = (x: number, y: number): { row: number; column: number } => {
   const { radius } = grid;
@@ -183,11 +185,13 @@ start.onclick = () => {
     examples.style.visibility = 'hidden';
   }
 
+  numIterations = 0;
   startAnimation = true;
   start.disabled = true;
   stop.disabled = false;
   stepAll.disabled = true;
   stepOnce.disabled = true;
+  radius.disabled = true;
   requestLoop();
 };
 
@@ -197,6 +201,7 @@ stop.onclick = () => {
   stop.disabled = true;
   stepAll.disabled = false;
   stepOnce.disabled = false;
+  radius.disabled = false;
 };
 
 stepOnce.onclick = () => {
@@ -227,12 +232,17 @@ exampleRandom.onclick = () => {
   grid.drawExample(drawRandomly(grid.maxValue));
 };
 
+radius.onchange = () => {
+  grid.maybeResize(radius.valueAsNumber);
+  redrawAfterResize(radius.valueAsNumber);
+};
+
 const loop = () => {
   if (!startAnimation) {
     return;
   }
 
-  iterations.innerText = `${++numIterations}`;
+  ++numIterations;
 
   const didAvalanche = grid.avalancheOnceOverGrid();
   if (!didAvalanche) {
@@ -241,6 +251,7 @@ const loop = () => {
       examples.style.visibility = 'visible';
     }
     stop.click();
+    console.log(`Num iterations: ${numIterations}`);
     return;
   }
 

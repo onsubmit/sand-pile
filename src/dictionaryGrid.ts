@@ -5,11 +5,6 @@ export type Dimensions = {
   maxColumn: number;
 };
 
-export type ValueAndDidExpand<T> = {
-  value: T;
-  didExpand: boolean;
-};
-
 export default class DictionaryGrid<T> {
   private _grid: Map<number, Map<number, T>>;
   private _defaultValue: T;
@@ -49,22 +44,13 @@ export default class DictionaryGrid<T> {
     return element;
   };
 
-  getMaybeExpand = (row: number, column: number): ValueAndDidExpand<T> => {
-    if (row < -this._radius - 1 || row > this._radius + 1) {
-      throw new Error('The grid can only be expanded one column at a time.');
+  maybeResize = (newRadius: number): boolean => {
+    if (newRadius !== this._radius) {
+      this.resizeGrid(newRadius);
+      return true;
     }
 
-    if (column < -this._radius - 1 || column > this._radius + 1) {
-      throw new Error('The grid can only be expanded one row at a time.');
-    }
-
-    let needsExpansion = Math.abs(row) > this._radius || Math.abs(column) > this._radius;
-    if (needsExpansion) {
-      this.expandGrid();
-    }
-
-    const value = this.getOrThrow(row, column);
-    return { value, didExpand: needsExpansion };
+    return false;
   };
 
   set = (row: number, column: number, value: T): void => {
@@ -80,39 +66,50 @@ export default class DictionaryGrid<T> {
     gridRow.set(column, value);
   };
 
-  setMaybeExpand = (row: number, column: number, value: T): boolean => {
-    if (row < -this._radius - 1 || row > this._radius + 1) {
-      throw new Error('The grid can only be expanded one column at a time.');
+  private resizeGrid = (newRadius: number): void => {
+    const oldRadius = this._radius;
+    this._radius = newRadius;
+
+    if (newRadius === oldRadius) {
+      return;
     }
 
-    if (column < -this._radius - 1 || column > this._radius + 1) {
-      throw new Error('The grid can only be expanded one row at a time.');
-    }
+    if (newRadius > oldRadius) {
+      const delta = newRadius - oldRadius;
 
-    let needsExpansion = Math.abs(row) > this._radius || Math.abs(column) > this._radius;
-    if (needsExpansion) {
-      this.expandGrid();
-    }
+      const min = Array.from({ length: delta }, (_, i) => -newRadius + i);
+      const max = Array.from({ length: delta }, (_, i) => oldRadius + i + 1);
+      const range = [...min, ...max];
 
-    this.set(row, column, value);
-    return needsExpansion;
-  };
+      for (const r of range) {
+        const gridRow = new Map<number, T>();
+        for (let c = -newRadius; c <= newRadius; c++) {
+          gridRow.set(c, this._defaultValue);
+        }
 
-  private expandGrid = (): void => {
-    this._radius += 1;
-
-    for (const r of [-this._radius, this._radius]) {
-      const gridRow = new Map<number, T>();
-      for (let c = -this._radius; c <= this._radius; c++) {
-        gridRow.set(c, this._defaultValue);
+        this._grid.set(r, gridRow);
       }
 
-      this._grid.set(r, gridRow);
-    }
+      for (const c of range) {
+        for (let r = -newRadius; r < newRadius; r++) {
+          this.set(r, c, this._defaultValue);
+        }
+      }
+    } else {
+      const delta = oldRadius - newRadius;
 
-    for (const c of [-this._radius, this._radius]) {
-      for (let r = -this._radius; r < this._radius; r++) {
-        this.set(r, c, this._defaultValue);
+      const min = Array.from({ length: delta }, (_, i) => -oldRadius + i);
+      const max = Array.from({ length: delta }, (_, i) => newRadius + i + 1);
+      const range = [...min, ...max];
+
+      for (const r of range) {
+        this._grid.delete(r);
+      }
+
+      for (const c of range) {
+        for (let r = -oldRadius; r < oldRadius; r++) {
+          this._grid.get(r)?.delete(c);
+        }
       }
     }
   };

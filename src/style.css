@@ -14,7 +14,11 @@ body {
   height: 100vh;
   padding: 0;
   margin: 0;
+}
 
+.app {
+  width: 100vw;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -23,20 +27,19 @@ body {
 
 .controls,
 .examples,
-.stats {
+.config {
   display: inline-flex;
-  gap: 10px;
-  padding: 10px;
-  align-items: center;
+  gap: 6px;
+  padding: 6px;
 }
 
 button {
   border: 1px solid #343434;
-  border-radius: 6px;
+  border-radius: 2px;
   color: #fff;
   background: #1e1e1e;
-  font-size: 24px;
-  padding: 12px;
+  font-size: 12px;
+  padding: 4px;
 }
 
 button:not(:disabled) {

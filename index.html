@@ -6,24 +6,29 @@
     <title>Sand Pile</title>
   </head>
   <body>
-    <div class="controls">
-      <button id="start">Start ▶️</button>
-      <button id="stop" disabled>Stop ⏹️</button>
-      <button id="stepOnce">Step Once ⏯️</button>
-      <button id="stepAll">Step All ⏭️</button>
-      <button id="download">Download ⬇️</button>
-    </div>
+    <div class="app">
+      <div class="controls">
+        <button id="start">Start ▶️</button>
+        <button id="stop" disabled>Stop ⏹️</button>
+        <button id="stepOnce">Step Once ⏯️</button>
+        <button id="stepAll">Step All ⏭️</button>
+        <button id="download">Download ⬇️</button>
+      </div>
 
-    <canvas id="canvas"></canvas>
-    <div class="examples">
-      <span>Examples:</span>
-      <button id="exampleCircle">Circle</button>
-      <button id="exampleFill">Fill</button>
-      <button id="exampleRandom">Random</button>
-    </div>
-    <div class="stats">
-      <span>Iterations:</span>
-      <span id="iterations">0</span>
+      <canvas id="canvas"></canvas>
+      <div class="examples">
+        <span>Examples</span>
+        <button id="exampleCircle">Circle</button>
+        <button id="exampleFill">Fill</button>
+        <button id="exampleRandom">Random</button>
+      </div>
+      <div class="config">
+        <span>Config</span>
+        <label>
+          <span>Radius:</span>
+          <input id="radius" type="number" value="10" min="2" max="100"></input>
+        </label>
+      </div>
     </div>
 
     <script type="module" src="/src/main.ts"></script>
