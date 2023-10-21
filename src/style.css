@@ -21,7 +21,9 @@ body {
   align-items: center;
 }
 
-.controls, .examples {
+.controls,
+.examples,
+.stats {
   display: inline-flex;
   gap: 10px;
   padding: 10px;
@@ -32,10 +34,9 @@ button {
   border: 1px solid #343434;
   border-radius: 6px;
   color: #fff;
-  background: #1E1E1E;
+  background: #1e1e1e;
   font-size: 24px;
   padding: 12px;
-
 }
 
 button:not(:disabled) {
@@ -55,7 +56,6 @@ button:active:not(:disabled) {
   background: #000;
   transform: scale(0.98);
 }
-
 
 canvas {
   border: 1px solid #343434;

@@ -17,10 +17,12 @@ const start = document.querySelector<HTMLButtonElement>('#start')!;
 const stop = document.querySelector<HTMLButtonElement>('#stop')!;
 const stepOnce = document.querySelector<HTMLButtonElement>('#stepOnce')!;
 const stepAll = document.querySelector<HTMLButtonElement>('#stepAll')!;
+const download = document.querySelector<HTMLButtonElement>('#download')!;
 const examples = document.querySelector<HTMLButtonElement>('.examples')!;
 const exampleCircle = document.querySelector<HTMLButtonElement>('#exampleCircle')!;
 const exampleFill = document.querySelector<HTMLButtonElement>('#exampleFill')!;
 const exampleRandom = document.querySelector<HTMLButtonElement>('#exampleRandom')!;
+const iterations = document.querySelector<HTMLSpanElement>('#iterations')!;
 
 const context = canvas.getContext('2d');
 if (!context) {
@@ -28,6 +30,7 @@ if (!context) {
 }
 
 let startAnimation = false;
+let numIterations = 0;
 const cellSize = config.cellSize;
 const initialGridWidthInNumCells = 1 + 2 * config.radius;
 
@@ -103,6 +106,7 @@ const drawAtMouse = (x: number, y: number, increment: boolean, force = false) =>
 
   const { row, column } = mapCanvasCoordinatesToGridCoordinates(x, y);
 
+  // TODO: Make this configurable.
   if (increment && grid.getValueOrThrow(row, column) >= config.maxStackSize) {
     return;
   }
@@ -203,7 +207,15 @@ stepAll.onclick = () => {
   grid.avalancheOnceOverGrid();
 };
 
+download.onclick = () => {
+  const link = document.createElement('a');
+  link.download = `filename-${numIterations}.png`;
+  link.href = canvas.toDataURL();
+  link.click();
+};
+
 exampleCircle.onclick = () => {
+  // TODO: Make the maxValue configurable.
   grid.drawExample(drawCircle(grid.radius, grid.maxValue));
 };
 
@@ -219,6 +231,8 @@ const loop = () => {
   if (!startAnimation) {
     return;
   }
+
+  iterations.innerText = `${++numIterations}`;
 
   const didAvalanche = grid.avalancheOnceOverGrid();
   if (!didAvalanche) {

@@ -9,11 +9,9 @@
     <div class="controls">
       <button id="start">Start ▶️</button>
       <button id="stop" disabled>Stop ⏹️</button>
-
-      <span>
-        <button id="stepOnce">Step Once ⏯️</button>
-        <button id="stepAll">Step All ⏭️</button>
-      </span>
+      <button id="stepOnce">Step Once ⏯️</button>
+      <button id="stepAll">Step All ⏭️</button>
+      <button id="download">Download ⬇️</button>
     </div>
 
     <canvas id="canvas"></canvas>
@@ -22,6 +20,10 @@
       <button id="exampleCircle">Circle</button>
       <button id="exampleFill">Fill</button>
       <button id="exampleRandom">Random</button>
+    </div>
+    <div class="stats">
+      <span>Iterations:</span>
+      <span id="iterations">0</span>
     </div>
 
     <script type="module" src="/src/main.ts"></script>

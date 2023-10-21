@@ -4,7 +4,7 @@ export default class Config {
   private static readonly DEFAULT_CELL_SIZE = 50;
   private static readonly DEFAULT_CELL_COLOR = '#ffffff';
   private static readonly DEFAULT_CELL_BACKGROUND_COLOR = '#242424';
-  private static readonly MAX_STACK_SIZE = 4;
+  private static readonly MIN_MAX_STACK_SIZE = 4;
   private static readonly MIN_FRAME_DELAY = 0;
 
   private _radius: number;
@@ -23,8 +23,8 @@ export default class Config {
     this._cellBackgroundColor = params.cellBackgroundColor || Config.DEFAULT_CELL_BACKGROUND_COLOR;
     this._drawNumbers = params.drawNumbers === '1';
     this._maxStackSize = Math.max(
-      Config.MAX_STACK_SIZE,
-      Math.min(255, parseInt(params.maxStackSize || '0') || Config.MAX_STACK_SIZE)
+      Config.MIN_MAX_STACK_SIZE,
+      Math.min(255, parseInt(params.maxStackSize || '0') || Config.MIN_MAX_STACK_SIZE)
     );
     this._frameDelay = Math.max(Config.MIN_FRAME_DELAY, parseInt(params.frameDelay || '0') || Config.MIN_FRAME_DELAY);
     this._hideControlsWhenRunning = params.hideControlsWhenRunning === '1';
