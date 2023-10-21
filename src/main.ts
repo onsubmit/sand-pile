@@ -38,6 +38,8 @@ const initialGridWidthInNumCells = 1 + 2 * radius.valueAsNumber;
 
 canvas.width = cellSize * initialGridWidthInNumCells;
 canvas.height = cellSize * initialGridWidthInNumCells;
+canvas.style.width = `${canvas.width}px`;
+canvas.style.height = `${canvas.height}px`;
 context.fillStyle = cellColor;
 
 const drawAtCoordinate = (row: number, column: number, value: number) => {
@@ -52,6 +54,8 @@ const drawAtCoordinate = (row: number, column: number, value: number) => {
 const redraw = (newRadius: number): void => {
   canvas.width = cellSize * (1 + 2 * newRadius);
   canvas.height = cellSize * (1 + 2 * newRadius);
+  canvas.style.width = `${canvas.width}px`;
+  canvas.style.height = `${canvas.height}px`;
 
   context.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -242,6 +246,8 @@ cellSizeEl.onchange = () => {
 
   canvas.width = cellSize * initialGridWidthInNumCells;
   canvas.height = cellSize * initialGridWidthInNumCells;
+  canvas.style.width = `${canvas.width}px`;
+  canvas.style.height = `${canvas.height}px`;
   grid.redraw();
 };
 
