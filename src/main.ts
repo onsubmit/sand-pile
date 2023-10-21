@@ -1,5 +1,5 @@
 import { blend, hexToRgb } from './color';
-import { drawCircle, drawRandomly, fill } from './examples';
+import { drawCheckerboard, drawCircle, drawRandomly, fill } from './examples';
 import Grid from './grid';
 import './style.css';
 
@@ -11,6 +11,7 @@ const stepAll = document.querySelector<HTMLButtonElement>('#stepAll')!;
 const download = document.querySelector<HTMLButtonElement>('#download')!;
 const exampleCircle = document.querySelector<HTMLButtonElement>('#exampleCircle')!;
 const exampleFill = document.querySelector<HTMLButtonElement>('#exampleFill')!;
+const exampleCheckerboard = document.querySelector<HTMLButtonElement>('#exampleCheckerboard')!;
 const exampleRandom = document.querySelector<HTMLButtonElement>('#exampleRandom')!;
 const radius = document.querySelector<HTMLInputElement>('#radius')!;
 const toppleThresholdEl = document.querySelector<HTMLInputElement>('#toppleThreshold')!;
@@ -211,6 +212,10 @@ exampleCircle.onclick = () => {
 
 exampleFill.onclick = () => {
   grid.drawExample(fill(maxCellGrains));
+};
+
+exampleCheckerboard.onclick = () => {
+  grid.drawExample(drawCheckerboard(maxCellGrains));
 };
 
 exampleRandom.onclick = () => {

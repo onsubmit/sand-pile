@@ -2,7 +2,7 @@ import DictionaryGrid from './dictionaryGrid';
 
 export type DrawCallback = (row: number, column: number, value: number) => void;
 export type ResizeCallback = (newRadius: number) => void;
-export type DrawExampleFn = (row: number, column: number) => number;
+export type DrawExampleFn = (row: number, column: number, gridRadius: number) => number;
 
 export default class Grid {
   private _grid: DictionaryGrid<number>;
@@ -41,7 +41,7 @@ export default class Grid {
   drawExample = (drawExampleFn: DrawExampleFn) => {
     for (let row = -this.radius; row <= this.radius; row++) {
       for (let column = -this.radius; column <= this.radius; column++) {
-        const value = drawExampleFn(row, column);
+        const value = drawExampleFn(row, column, this.radius);
         this.setValueOrThrow(row, column, value);
       }
     }
