@@ -8,7 +8,6 @@ const searchParams = new URLSearchParams(window.location.search);
 const params = Object.fromEntries(searchParams);
 const config = new Config(params);
 
-const cellColor = hexToRgb(config.cellColor);
 const cellBackgroundColor = hexToRgb(config.cellBackgroundColor);
 
 const canvas = document.querySelector<HTMLCanvasElement>('#canvas')!;
@@ -24,6 +23,7 @@ const exampleFill = document.querySelector<HTMLButtonElement>('#exampleFill')!;
 const exampleRandom = document.querySelector<HTMLButtonElement>('#exampleRandom')!;
 const radius = document.querySelector<HTMLInputElement>('#radius')!;
 const cellSizeEl = document.querySelector<HTMLInputElement>('#cellSize')!;
+const cellColorEl = document.querySelector<HTMLInputElement>('#cellColor')!;
 
 const context = canvas.getContext('2d');
 if (!context) {
@@ -33,17 +33,19 @@ if (!context) {
 let startAnimation = false;
 let numIterations = 0;
 let cellSize = cellSizeEl.valueAsNumber;
+let cellColor = cellColorEl.value;
+let cellColorRgb = hexToRgb(cellColor);
 const initialGridWidthInNumCells = 1 + 2 * radius.valueAsNumber;
 
 canvas.width = cellSize * initialGridWidthInNumCells;
 canvas.height = cellSize * initialGridWidthInNumCells;
-context.fillStyle = config.cellColor;
+context.fillStyle = cellColor;
 context.font = `${cellSize / 4}px arial`;
 
 const drawAtCoordinate = (row: number, column: number, value: number) => {
   const newCellColor = blend(
     cellBackgroundColor,
-    cellColor,
+    cellColorRgb,
     Math.min(value, config.maxStackSize) / config.maxStackSize
   );
 
@@ -58,7 +60,7 @@ const drawAtCoordinate = (row: number, column: number, value: number) => {
   }
 };
 
-const redrawAfterResize = (newRadius: number): void => {
+const redraw = (newRadius: number): void => {
   canvas.width = cellSize * (1 + 2 * newRadius);
   canvas.height = cellSize * (1 + 2 * newRadius);
 
@@ -73,7 +75,7 @@ const redrawAfterResize = (newRadius: number): void => {
   }
 };
 
-const grid = new Grid(radius.valueAsNumber, config.maxStackSize, drawAtCoordinate, redrawAfterResize);
+const grid = new Grid(radius.valueAsNumber, config.maxStackSize, drawAtCoordinate, redraw);
 
 const mapCanvasCoordinatesToGridCoordinates = (x: number, y: number): { row: number; column: number } => {
   const { radius } = grid;
@@ -235,7 +237,13 @@ exampleRandom.onclick = () => {
 
 radius.onchange = () => {
   grid.maybeResize(radius.valueAsNumber);
-  redrawAfterResize(radius.valueAsNumber);
+  redraw(radius.valueAsNumber);
+};
+
+cellColorEl.onchange = () => {
+  cellColor = cellColorEl.value;
+  cellColorRgb = hexToRgb(cellColor);
+  redraw(radius.valueAsNumber);
 };
 
 cellSizeEl.onchange = () => {
