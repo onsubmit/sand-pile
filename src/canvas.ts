@@ -5,10 +5,11 @@ export default class Canvas {
   #context: CanvasRenderingContext2D;
   #size: number;
 
-  constructor(canvasSelector: string) {
+  constructor(canvasSelector: string, size: number) {
     this.#canvas = this.#getCanvas(canvasSelector);
     this.#context = this.#getContext();
-    this.#size = this.#canvas.width; // square
+    this.#size = size;
+    this.#resizeCanvas();
   }
 
   get size() {
@@ -17,10 +18,7 @@ export default class Canvas {
 
   set size(value: number) {
     this.#size = value;
-    this.#canvas.width = value;
-    this.#canvas.height = value;
-    this.#canvas.style.width = `${value}px`;
-    this.#canvas.style.height = `${value}px`;
+    this.#resizeCanvas();
   }
 
   get element(): HTMLCanvasElement {
@@ -47,5 +45,12 @@ export default class Canvas {
     }
 
     return context;
+  }
+
+  #resizeCanvas() {
+    this.#canvas.width = this.#size;
+    this.#canvas.height = this.#size;
+    this.#canvas.style.width = `${this.#size}px`;
+    this.#canvas.style.height = `${this.#size}px`;
   }
 }

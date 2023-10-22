@@ -270,8 +270,7 @@ function getGridSizeInNumCells(): number {
 }
 
 function getCanvas() {
-  const canvas = new Canvas('#canvas');
-  canvas.size = cellSize.value * getGridSizeInNumCells();
+  const canvas = new Canvas('#canvas', cellSize.value * getGridSizeInNumCells());
   canvas.context.fillStyle = cellColor.value;
 
   canvas.element.addEventListener('mousedown', (e: MouseEvent) => {
