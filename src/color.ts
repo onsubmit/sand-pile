@@ -13,13 +13,22 @@ export const blend = (background: ColorRgb, foreground: ColorRgb, opacity: numbe
 };
 
 export const hexToRgb = (hex: string): ColorRgb => {
-  const r = hex.substring(1, 3);
-  const g = hex.substring(3, 5);
-  const b = hex.substring(5, 7);
+  if (hex.length !== 7 || hex.at(0) !== '#') {
+    throw new Error('Only 6-digit hex strings are supported');
+  }
+
+  const red = parseInt(hex.substring(1, 3), 16);
+  const green = parseInt(hex.substring(3, 5), 16);
+  const blue = parseInt(hex.substring(5, 7), 16);
+
+  if (Number.isNaN(red) || Number.isNaN(green) || Number.isNaN(blue)) {
+    throw new Error('Only 6-digit hex strings are supported');
+  }
+
   return {
-    red: parseInt(r, 16),
-    green: parseInt(g, 16),
-    blue: parseInt(b, 16),
+    red,
+    green,
+    blue,
   };
 };
 
@@ -31,3 +40,8 @@ function componentToHex(component: number) {
 function rgbToHex(r: number, g: number, b: number) {
   return `#${componentToHex(r)}${componentToHex(g)}${componentToHex(b)}`;
 }
+
+export const exportedForTesting = {
+  componentToHex,
+  rgbToHex,
+};
