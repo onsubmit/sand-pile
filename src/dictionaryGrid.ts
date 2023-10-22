@@ -5,14 +5,23 @@ export type Dimensions = {
   maxColumn: number;
 };
 
+type Input<T> = {
+  radius: number;
+  defaultValue: T;
+};
+
 export default class DictionaryGrid<T> {
   #grid: Map<number, Map<number, T>>;
   #defaultValue: T;
   #radius: number;
 
-  constructor(radius: number, defaultValue: T) {
+  constructor({ radius, defaultValue }: Input<T>) {
+    if (radius < 0) {
+      throw new Error('Radius must be a positive integer.');
+    }
+
     this.#defaultValue = defaultValue;
-    this.#radius = radius;
+    this.#radius = Math.floor(radius);
 
     this.#grid = new Map();
     for (let r = -radius; r <= radius; r++) {
@@ -54,6 +63,8 @@ export default class DictionaryGrid<T> {
   };
 
   set = (row: number, column: number, value: T): void => {
+    // Can't add new rows.
+    // Can add new columns.
     this.#grid.get(row)?.set(column, value);
   };
 
@@ -61,6 +72,11 @@ export default class DictionaryGrid<T> {
     const gridRow = this.#grid.get(row);
     if (!gridRow) {
       throw new Error(`Invalid row: ${row}`);
+    }
+
+    const element = gridRow.get(column);
+    if (element === undefined) {
+      throw new Error(`Invalid column: ${column}`);
     }
 
     gridRow.set(column, value);

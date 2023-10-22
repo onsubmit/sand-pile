@@ -13,7 +13,7 @@ export default class Grid {
   #resizeCallback: ResizeCallback;
 
   constructor(radius: number, toppleThreshold: number, drawCallback: DrawCallback, resizeCallback: ResizeCallback) {
-    this.#grid = new DictionaryGrid<number>(radius, 0);
+    this.#grid = new DictionaryGrid<number>({ radius, defaultValue: 0 });
     this.#toppleThreshold = toppleThreshold;
     this.#drawCallback = drawCallback;
     this.#resizeCallback = resizeCallback;
