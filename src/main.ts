@@ -19,12 +19,14 @@ import Grid, { GridCoordinates } from './grid';
 
 const radius = new InputNumberTypeObserver('#radius', onRadiusChange).listen();
 const toppleThreshold = new InputNumberTypeObserver('#toppleThreshold', onToppleThresholdChange).listen();
-const maxCellGrains = new InputNumberTypeObserver('#maxCellGrains').listen();
+const maxCellGrains = new InputNumberTypeObserver('#maxCellGrains', onMaxCellGrainsChange).listen();
 const cellSize = new InputNumberTypeObserver('#cellSize', onCellSizeChange).listen();
 const cellColor = new InputTextTypeObserver('#cellColor', onCellColorChange).listen();
 const cellBackgroundColor = new InputTextTypeObserver('#cellBackgroundColor', onCellBackgroundColorChange).listen();
+const penSize = new InputNumberTypeObserver('#penSize').listen();
+const penWeight = new InputNumberTypeObserver('#penWeight').listen();
 
-const lastDrawnCell: { x: number | undefined; y: number | undefined } = { x: undefined, y: undefined };
+const lastDrawnCell: Partial<CanvasCoordinates> = {};
 const mouseState = {
   isMouseDown: false,
   isMiddleClick: false,
@@ -137,15 +139,39 @@ function mapGridCoordinatesToCanvasCoordinates(gridCoordinates: GridCoordinates)
   return { x, y };
 }
 
-function drawAtMouse(input: { canvasCoordinates: CanvasCoordinates; increment: boolean; force: boolean }) {
-  const { canvasCoordinates, increment, force } = input;
+function constrainCanvasCoordinates(canvasCoordinates: CanvasCoordinates): CanvasCoordinates {
   let { x, y } = canvasCoordinates;
+
+  x = Math.max(x, 0);
+  y = Math.max(y, 0);
 
   x = Math.min(x, canvas.size - 1);
   y = Math.min(y, canvas.size - 1);
 
   x = Math.floor(x / cellSize.value) * cellSize.value;
   y = Math.floor(y / cellSize.value) * cellSize.value;
+
+  return { x, y };
+}
+
+function getRangesForPenSize(gridCoordinates: GridCoordinates): { min: GridCoordinates; max: GridCoordinates } {
+  const { row, column } = gridCoordinates;
+  const penAdjustFloor = Math.floor((penSize.value - 1) / 2);
+  const penAdjustCeil = Math.ceil((penSize.value - 1) / 2);
+  const minRow = Math.max(-grid.radius, row - penAdjustFloor);
+  const minColumn = Math.max(-grid.radius, column - penAdjustFloor);
+  const maxRow = Math.min(row + penAdjustCeil, grid.radius);
+  const maxColumn = Math.min(column + penAdjustCeil, grid.radius);
+
+  return {
+    min: { row: minRow, column: minColumn },
+    max: { row: maxRow, column: maxColumn },
+  };
+}
+
+function drawAtMouse(input: { canvasCoordinates: CanvasCoordinates; increment: boolean; force: boolean }) {
+  const { canvasCoordinates, increment, force } = input;
+  const { x, y } = constrainCanvasCoordinates(canvasCoordinates);
 
   if (!force && x === lastDrawnCell.x && y === lastDrawnCell.y) {
     return;
@@ -155,32 +181,36 @@ function drawAtMouse(input: { canvasCoordinates: CanvasCoordinates; increment: b
   lastDrawnCell.y = y;
 
   const { row, column } = mapCanvasCoordinatesToGridCoordinates({ x, y });
+  const { min, max } = getRangesForPenSize({ row, column });
 
-  if (increment && grid.getValueOrThrow(row, column) >= maxCellGrains.value) {
-    return;
-  }
+  for (let r = min.row; r <= max.row; r++) {
+    for (let c = min.column; c <= max.column; c++) {
+      if (increment) {
+        const value = grid.getValueOrThrow(r, c);
+        const amount = value + penWeight.value > maxCellGrains.value ? maxCellGrains.value - value : penWeight.value;
 
-  if (increment) {
-    grid.incrementOrThrow(row, column);
-  } else {
-    grid.decrementOrThrow(row, column);
+        if (amount === 0) {
+          continue;
+        }
+
+        grid.incrementOrThrow(r, c, amount);
+      } else {
+        grid.decrementOrThrow(r, c, penWeight.value);
+      }
+    }
   }
 }
 
-function clear(canvasCoordinates: CanvasCoordinates) {
-  let { x, y } = canvasCoordinates;
-
-  x = Math.min(x, canvas.size - 1);
-  y = Math.min(y, canvas.size - 1);
-
-  x = Math.floor(x / cellSize.value) * cellSize.value;
-  y = Math.floor(y / cellSize.value) * cellSize.value;
-
+function clearAtMouse(canvasCoordinates: CanvasCoordinates) {
+  const { x, y } = constrainCanvasCoordinates(canvasCoordinates);
   const { row, column } = mapCanvasCoordinatesToGridCoordinates({ x, y });
+  const { min, max } = getRangesForPenSize({ row, column });
 
-  grid.reset(row, column);
-  canvas.context.fillStyle = cellBackgroundColor.value;
-  canvas.context.fillRect(x, y, cellSize.value, cellSize.value);
+  for (let r = min.row; r <= max.row; r++) {
+    for (let c = min.column; c <= max.column; c++) {
+      grid.reset(r, c);
+    }
+  }
 }
 
 function loop() {
@@ -211,6 +241,13 @@ function onRadiusChange(newRadius: number) {
 
 function onToppleThresholdChange(newToppleThreshold: number) {
   grid.toppleThreshold = newToppleThreshold;
+}
+
+function onMaxCellGrainsChange(newMaxCellGrains: number) {
+  penWeight.max = newMaxCellGrains;
+  if (penWeight.value > newMaxCellGrains) {
+    penWeight.value = newMaxCellGrains;
+  }
 }
 
 function onCellSizeChange(newCellSize: number) {
@@ -244,7 +281,7 @@ function getCanvas() {
 
     const { offsetX: x, offsetY: y } = e;
     if (mouseState.isRightClick) {
-      clear({ x, y });
+      clearAtMouse({ x, y });
     } else {
       drawAtMouse({ canvasCoordinates: { x, y }, increment: !mouseState.isMiddleClick, force: true });
     }
@@ -259,7 +296,7 @@ function getCanvas() {
       const { offsetX: x, offsetY: y } = e;
 
       if (mouseState.isRightClick) {
-        clear({ x, y });
+        clearAtMouse({ x, y });
       } else {
         drawAtMouse({ canvasCoordinates: { x, y }, increment: !mouseState.isMiddleClick, force: false });
       }

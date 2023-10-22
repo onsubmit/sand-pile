@@ -3,12 +3,13 @@ export type SetElementValue<TElement, TValue> = (element: TElement, value: TValu
 export type OnElementValueChange<TValue> = (newValue: TValue) => void;
 
 class ElementObserver<TElement extends HTMLInputElement, TValue> {
-  #element: TElement;
   #listening = false;
   #value: TValue;
   #getElementValue: GetElementValue<TElement, TValue>;
   #setElementValue: SetElementValue<TElement, TValue>;
   #onChange?: OnElementValueChange<TValue>;
+
+  protected element: TElement;
 
   constructor(
     selector: string,
@@ -21,8 +22,8 @@ class ElementObserver<TElement extends HTMLInputElement, TValue> {
       throw new Error(`Element with selector <${selector}> not found.`);
     }
 
-    this.#element = element;
-    this.#value = getElementValue(this.#element);
+    this.element = element;
+    this.#value = getElementValue(this.element);
     this.#getElementValue = getElementValue;
     this.#setElementValue = setElementValue;
     this.#onChange = onChange;
@@ -34,15 +35,15 @@ class ElementObserver<TElement extends HTMLInputElement, TValue> {
 
   set value(v: TValue) {
     this.#value = v;
-    this.#setElementValue(this.#element, v);
+    this.#setElementValue(this.element, v);
   }
 
   get disabled(): boolean {
-    return this.#element.disabled;
+    return this.element.disabled;
   }
 
   set disabled(v: boolean) {
-    this.#element.disabled = v;
+    this.element.disabled = v;
   }
 
   listen = (): this => {
@@ -50,8 +51,8 @@ class ElementObserver<TElement extends HTMLInputElement, TValue> {
       throw new Error('ElementObserver already initialized');
     }
 
-    this.#element.onchange = () => {
-      this.#value = this.#getElementValue(this.#element);
+    this.element.onchange = () => {
+      this.#value = this.#getElementValue(this.element);
       this.#onChange?.(this.#value);
     };
 
@@ -63,6 +64,14 @@ class ElementObserver<TElement extends HTMLInputElement, TValue> {
 export class InputNumberTypeObserver extends ElementObserver<HTMLInputElement, number> {
   constructor(selector: string, onChange?: OnElementValueChange<number>) {
     super(selector, getValueOfInputNumberType, setValueOfInputNumberType, onChange);
+  }
+
+  get max(): number {
+    return parseInt(this.element.max, 10);
+  }
+
+  set max(value: number) {
+    this.element.max = `${value}`;
   }
 }
 

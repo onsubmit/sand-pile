@@ -51,11 +51,7 @@ export default class Grid {
 
   decrementOrThrow = (row: number, column: number, amount = 1): number => {
     const element = this.getValueOrThrow(row, column);
-    if (element === 0) {
-      return 0;
-    }
-
-    const newValue = element - amount;
+    const newValue = Math.max(0, element - amount);
     this.#grid.setOrThrow(row, column, newValue);
     this.#drawCallback(row, column, newValue);
 
