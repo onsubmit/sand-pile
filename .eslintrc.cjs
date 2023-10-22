@@ -1,15 +1,15 @@
 module.exports = {
   root: true,
-  parser: "@typescript-eslint/parser",
+  parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 2020,
-    sourceType: "module",
+    sourceType: 'module',
   },
   settings: {
-    "import/resolver": {
+    'import/resolver': {
       node: {
-        paths: ["src"],
-        extensions: [".ts"],
+        paths: ['src'],
+        extensions: ['.ts'],
       },
     },
   },
@@ -18,32 +18,29 @@ module.exports = {
     amd: true,
     node: true,
   },
-  extends: [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:prettier/recommended",
-  ],
-  plugins: ["simple-import-sort", "prettier"],
+  extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended', 'plugin:prettier/recommended'],
+  plugins: ['simple-import-sort', 'prettier'],
   rules: {
-    "prettier/prettier": ["error", {}, { usePrettierrc: true }],
-    "@typescript-eslint/explicit-function-return-type": "off",
-    "@typescript-eslint/no-unused-vars": [
-      "error",
+    'prettier/prettier': ['error', {}, { usePrettierrc: true }],
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/no-unused-vars': [
+      'error',
       {
-        argsIgnorePattern: "^_",
-        destructuredArrayIgnorePattern: "^_",
-        varsIgnorePattern: "^_",
+        argsIgnorePattern: '^_',
+        destructuredArrayIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
       },
     ],
-    "simple-import-sort/imports": "error",
-    "simple-import-sort/exports": "error",
+    'simple-import-sort/imports': 'error',
+    'simple-import-sort/exports': 'error',
+    'accessor-pairs': ['error', { setWithoutGet: true, enforceForClassMembers: true }],
   },
   overrides: [
     {
-      files: ["src/assets/**/*"],
+      files: ['src/assets/**/*'],
       rules: {
-        "no-undef": "off",
-        "@typescript-eslint/no-unused-vars": "off",
+        'no-undef': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
       },
     },
   ],

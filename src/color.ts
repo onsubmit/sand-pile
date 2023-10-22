@@ -24,7 +24,7 @@ export const hexToRgb = (hex: string): ColorRgb => {
 };
 
 function componentToHex(component: number) {
-  var hex = component.toString(16);
+  const hex = component.toString(16);
   return hex.length === 1 ? `0${hex}` : hex;
 }
 

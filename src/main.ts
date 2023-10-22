@@ -1,3 +1,5 @@
+import './style.css';
+
 import Canvas, { CanvasCoordinates } from './canvas';
 import { blend, hexToRgb } from './color';
 import { InputNumberTypeObserver, InputTextTypeObserver } from './elementObserver';
@@ -14,7 +16,6 @@ import {
 } from './elements';
 import { drawCheckerboard, drawCircle, drawRandomly, fill } from './examples';
 import Grid, { GridCoordinates } from './grid';
-import './style.css';
 
 const radius = new InputNumberTypeObserver('#radius', onRadiusChange).listen();
 const toppleThreshold = new InputNumberTypeObserver('#toppleThreshold', onToppleThresholdChange).listen();
@@ -140,13 +141,11 @@ function drawAtMouse(input: { canvasCoordinates: CanvasCoordinates; increment: b
   const { canvasCoordinates, increment, force } = input;
   let { x, y } = canvasCoordinates;
 
-  if (cellSize.value > 1) {
-    x = Math.floor(x / cellSize.value) * cellSize.value;
-  }
+  x = Math.min(x, canvas.size - 1);
+  y = Math.min(y, canvas.size - 1);
 
-  if (cellSize.value > 1) {
-    y = Math.floor(y / cellSize.value) * cellSize.value;
-  }
+  x = Math.floor(x / cellSize.value) * cellSize.value;
+  y = Math.floor(y / cellSize.value) * cellSize.value;
 
   if (!force && x === lastDrawnCell.x && y === lastDrawnCell.y) {
     return;
@@ -171,13 +170,11 @@ function drawAtMouse(input: { canvasCoordinates: CanvasCoordinates; increment: b
 function clear(canvasCoordinates: CanvasCoordinates) {
   let { x, y } = canvasCoordinates;
 
-  if (cellSize.value > 1) {
-    x = Math.floor(x / cellSize.value) * cellSize.value;
-  }
+  x = Math.min(x, canvas.size - 1);
+  y = Math.min(y, canvas.size - 1);
 
-  if (cellSize.value > 1) {
-    y = Math.floor(y / cellSize.value) * cellSize.value;
-  }
+  x = Math.floor(x / cellSize.value) * cellSize.value;
+  y = Math.floor(y / cellSize.value) * cellSize.value;
 
   const { row, column } = mapCanvasCoordinatesToGridCoordinates({ x, y });
 

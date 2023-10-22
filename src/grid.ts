@@ -122,7 +122,7 @@ export default class Grid {
       [row, column - 1],
     ] as const;
 
-    let coordinatesRequiringToppling = new Set<string>();
+    const coordinatesRequiringToppling = new Set<string>();
     for (const coordinates of cardinalBorderCoordinates) {
       const [cellRow, cellColumn] = coordinates;
 
