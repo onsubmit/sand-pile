@@ -7,7 +7,7 @@ export default class Canvas {
 
   constructor(canvasSelector: string) {
     this.#canvas = this.#getCanvas(canvasSelector);
-    this.#context = this.#getContenxt();
+    this.#context = this.#getContext();
     this.#size = this.#canvas.width; // square
   }
 
@@ -40,7 +40,7 @@ export default class Canvas {
     return canvas;
   }
 
-  #getContenxt() {
+  #getContext() {
     const context = this.#canvas.getContext('2d');
     if (!context) {
       throw 'Could not get rendering context';
