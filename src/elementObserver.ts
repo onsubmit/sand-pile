@@ -3,7 +3,6 @@ export type SetElementValue<TElement, TValue> = (element: TElement, value: TValu
 export type OnElementValueChange<TValue> = (newValue: TValue) => void;
 
 class ElementObserver<TElement extends HTMLInputElement, TValue> {
-  #listening = false;
   #value: TValue;
   #getElementValue: GetElementValue<TElement, TValue>;
   #setElementValue: SetElementValue<TElement, TValue>;
@@ -27,6 +26,8 @@ class ElementObserver<TElement extends HTMLInputElement, TValue> {
     this.#getElementValue = getElementValue;
     this.#setElementValue = setElementValue;
     this.#onChange = onChange;
+
+    this.#listen();
   }
 
   get value(): TValue {
@@ -46,17 +47,12 @@ class ElementObserver<TElement extends HTMLInputElement, TValue> {
     this.element.disabled = v;
   }
 
-  listen = (): this => {
-    if (this.#listening) {
-      throw new Error('ElementObserver already initialized');
-    }
-
+  #listen = (): this => {
     this.element.onchange = () => {
       this.#value = this.#getElementValue(this.element);
       this.#onChange?.(this.#value);
     };
 
-    this.#listening = true;
     return this;
   };
 }

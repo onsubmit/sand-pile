@@ -17,14 +17,14 @@ import {
 import { drawCheckerboard, drawCircle, drawRandomly, fill } from './examples';
 import Grid, { GridCoordinates } from './grid';
 
-const radius = new InputNumberTypeObserver('#radius', onRadiusChange).listen();
-const toppleThreshold = new InputNumberTypeObserver('#toppleThreshold', onToppleThresholdChange).listen();
-const maxCellGrains = new InputNumberTypeObserver('#maxCellGrains', onMaxCellGrainsChange).listen();
-const cellSize = new InputNumberTypeObserver('#cellSize', onCellSizeChange).listen();
-const cellColor = new InputTextTypeObserver('#cellColor', onCellColorChange).listen();
-const cellBackgroundColor = new InputTextTypeObserver('#cellBackgroundColor', onCellBackgroundColorChange).listen();
-const penSize = new InputNumberTypeObserver('#penSize').listen();
-const penWeight = new InputNumberTypeObserver('#penWeight').listen();
+const radius = new InputNumberTypeObserver('#radius', onRadiusChange);
+const toppleThreshold = new InputNumberTypeObserver('#toppleThreshold', onToppleThresholdChange);
+const maxCellGrains = new InputNumberTypeObserver('#maxCellGrains', onMaxCellGrainsChange);
+const cellSize = new InputNumberTypeObserver('#cellSize', onCellSizeChange);
+const cellColor = new InputTextTypeObserver('#cellColor', onCellColorChange);
+const cellBackgroundColor = new InputTextTypeObserver('#cellBackgroundColor', onCellBackgroundColorChange);
+const penSize = new InputNumberTypeObserver('#penSize');
+const penWeight = new InputNumberTypeObserver('#penWeight');
 
 const lastDrawnCell: Partial<CanvasCoordinates> = {};
 const mouseState = {
