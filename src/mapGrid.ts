@@ -1,16 +1,9 @@
-export type Dimensions = {
-  minRow: number;
-  minColumn: number;
-  maxRow: number;
-  maxColumn: number;
-};
-
 type Input<T> = {
   radius: number;
   defaultValue: T;
 };
 
-export default class DictionaryGrid<T> {
+export default class MapGrid<T> {
   #grid: Map<number, Map<number, T>>;
   #defaultValue: T;
   #radius: number;

@@ -1,4 +1,4 @@
-import { DrawExampleFn } from './grid';
+import { DrawExampleFn } from './canvasGrid';
 
 export const drawCircle = (radius: number, maxValue: number): DrawExampleFn => {
   const radiusSquared = radius * radius;

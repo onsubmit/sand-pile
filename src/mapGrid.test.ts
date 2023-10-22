@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import DictionaryGrid from './dictionaryGrid';
+import MapGrid from './mapGrid';
 
-describe('DictionaryGrid', () => {
+describe('MapGrid', () => {
   it('Should create a grid of radius 1', () => {
-    const grid = new DictionaryGrid<number>({ radius: 1, defaultValue: 0 });
+    const grid = new MapGrid<number>({ radius: 1, defaultValue: 0 });
 
     expect(grid.radius).toBe(1);
 
@@ -39,7 +39,7 @@ describe('DictionaryGrid', () => {
   });
 
   it('Should create a grid of radius 2', () => {
-    const grid = new DictionaryGrid<number>({ radius: 2, defaultValue: 0 });
+    const grid = new MapGrid<number>({ radius: 2, defaultValue: 0 });
 
     expect(grid.radius).toBe(2);
 
@@ -74,7 +74,7 @@ describe('DictionaryGrid', () => {
   });
 
   it('Should throw for getting values for coordinates outside the radius', () => {
-    const grid = new DictionaryGrid<number>({ radius: 1, defaultValue: 0 });
+    const grid = new MapGrid<number>({ radius: 1, defaultValue: 0 });
 
     expect(() => grid.getOrThrow(-2, -2)).toThrowError('Invalid row: -2');
     expect(() => grid.getOrThrow(-2, -1)).toThrowError('Invalid row: -2');
@@ -97,7 +97,7 @@ describe('DictionaryGrid', () => {
   });
 
   it('Should create new columns but not rows when setting values for coordinates outside the radius', () => {
-    const grid = new DictionaryGrid<number>({ radius: 1, defaultValue: 0 });
+    const grid = new MapGrid<number>({ radius: 1, defaultValue: 0 });
 
     grid.set(-2, -2, 1);
     expect(grid.get(-2, -2)).toBeUndefined();
@@ -136,7 +136,7 @@ describe('DictionaryGrid', () => {
   });
 
   it('Should throw for setting values for coordinates outside the radius', () => {
-    const grid = new DictionaryGrid<number>({ radius: 1, defaultValue: 0 });
+    const grid = new MapGrid<number>({ radius: 1, defaultValue: 0 });
 
     expect(() => grid.setOrThrow(-2, -2, 1)).toThrowError('Invalid row: -2');
     expect(() => grid.setOrThrow(-2, -1, 1)).toThrowError('Invalid row: -2');
@@ -159,13 +159,13 @@ describe('DictionaryGrid', () => {
   });
 
   it('Should not resize if new radius is the same as the old one', () => {
-    const grid = new DictionaryGrid<number>({ radius: 1, defaultValue: 0 });
+    const grid = new MapGrid<number>({ radius: 1, defaultValue: 0 });
     expect(grid.maybeResize(1)).toBe(false);
     expect(grid.radius).toBe(1);
   });
 
   it('Should expand the grid', () => {
-    const grid = new DictionaryGrid<number>({ radius: 1, defaultValue: 0 });
+    const grid = new MapGrid<number>({ radius: 1, defaultValue: 0 });
     expect(grid.maybeResize(2)).toBe(true);
     expect(grid.radius).toBe(2);
 
@@ -200,7 +200,7 @@ describe('DictionaryGrid', () => {
   });
 
   it('Should shrink the grid', () => {
-    const grid = new DictionaryGrid<number>({ radius: 2, defaultValue: 0 });
+    const grid = new MapGrid<number>({ radius: 2, defaultValue: 0 });
 
     expect(grid.maybeResize(1)).toBe(true);
     expect(grid.radius).toBe(1);

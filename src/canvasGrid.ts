@@ -1,4 +1,4 @@
-import DictionaryGrid from './dictionaryGrid';
+import MapGrid from './mapGrid';
 
 export type GridCoordinates = { row: number; column: number };
 
@@ -6,14 +6,21 @@ export type DrawCallback = (row: number, column: number, value: number) => void;
 export type ResizeCallback = (newRadius: number) => void;
 export type DrawExampleFn = (row: number, column: number, gridRadius: number) => number;
 
-export default class Grid {
-  #grid: DictionaryGrid<number>;
+type Input = {
+  radius: number;
+  toppleThreshold: number;
+  drawCallback: DrawCallback;
+  resizeCallback: ResizeCallback;
+};
+
+export default class CanvasGrid {
+  #grid: MapGrid<number>;
   #toppleThreshold: number;
   #drawCallback: DrawCallback;
   #resizeCallback: ResizeCallback;
 
-  constructor(radius: number, toppleThreshold: number, drawCallback: DrawCallback, resizeCallback: ResizeCallback) {
-    this.#grid = new DictionaryGrid<number>({ radius, defaultValue: 0 });
+  constructor({ radius, toppleThreshold, drawCallback, resizeCallback }: Input) {
+    this.#grid = new MapGrid<number>({ radius, defaultValue: 0 });
     this.#toppleThreshold = toppleThreshold;
     this.#drawCallback = drawCallback;
     this.#resizeCallback = resizeCallback;

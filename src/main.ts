@@ -1,6 +1,7 @@
 import './style.css';
 
 import Canvas, { CanvasCoordinates } from './canvas';
+import CanvasGrid, { GridCoordinates } from './canvasGrid';
 import { blend, hexToRgb } from './color';
 import { InputNumberTypeObserver, InputTextTypeObserver } from './elementObserver';
 import {
@@ -15,7 +16,6 @@ import {
   stop,
 } from './elements';
 import { drawCheckerboard, drawCircle, drawRandomly, fill } from './examples';
-import Grid, { GridCoordinates } from './grid';
 
 const radius = new InputNumberTypeObserver('#radius', onRadiusChange);
 const toppleThreshold = new InputNumberTypeObserver('#toppleThreshold', onToppleThresholdChange);
@@ -38,7 +38,12 @@ let numIterations = 0;
 let cellColorRgb = hexToRgb(cellColor.value);
 let cellBackgroundColorRgb = hexToRgb(cellBackgroundColor.value);
 
-const grid = new Grid(radius.value, toppleThreshold.value, drawAtCoordinate, redraw);
+const grid = new CanvasGrid({
+  radius: radius.value,
+  toppleThreshold: toppleThreshold.value,
+  drawCallback: drawAtCoordinate,
+  resizeCallback: redraw,
+});
 const canvas = getCanvas();
 
 setupControlEvents();
