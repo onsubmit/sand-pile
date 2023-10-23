@@ -51,7 +51,7 @@ export default class CanvasGrid {
     for (let row = -this.radius; row <= this.radius; row++) {
       for (let column = -this.radius; column <= this.radius; column++) {
         const value = drawExampleFn(row, column, this.radius);
-        this.setValueOrThrow(row, column, value);
+        this.#setValueOrThrow(row, column, value);
       }
     }
   };
@@ -70,7 +70,7 @@ export default class CanvasGrid {
     const value = this.getValueOrThrow(row, column);
 
     const newValue = value + 1;
-    this.setValueOrThrow(row, column, newValue);
+    this.#setValueOrThrow(row, column, newValue);
 
     if (didResize) {
       this.#resizeCallback(this.radius);
@@ -93,14 +93,14 @@ export default class CanvasGrid {
     for (let row = -this.radius; row <= this.radius; row++) {
       for (let column = -this.radius; column <= this.radius; column++) {
         if (this.getValueOrThrow(row, column) >= this.#toppleThreshold) {
-          this.toppleAtCoordinate(row, column);
+          this.#toppleAtCoordinate(row, column);
           return;
         }
       }
     }
   };
 
-  toppleOnceOverGrid = (): boolean => {
+  toppleOnceOverGrid = (): { didTopple: boolean } => {
     const coordinatesRequiringToppling: Array<{ row: number; column: number }> = [];
     for (let row = -this.radius; row <= this.radius; row++) {
       for (let column = -this.radius; column <= this.radius; column++) {
@@ -111,13 +111,26 @@ export default class CanvasGrid {
     }
 
     for (const { row, column } of coordinatesRequiringToppling) {
-      this.toppleAtCoordinate(row, column);
+      this.#toppleAtCoordinate(row, column);
     }
 
-    return coordinatesRequiringToppling.length > 0;
+    return { didTopple: coordinatesRequiringToppling.length > 0 };
   };
 
-  toppleAtCoordinate = (row: number, column: number): Set<string> => {
+  reset = (row: number, column: number) => {
+    this.#setValueOrThrow(row, column, 0);
+  };
+
+  maybeResize = (newRadius: number) => this.#grid.maybeResize(newRadius);
+
+  getValueOrThrow = (row: number, column: number): number => this.#grid.getOrThrow(row, column);
+
+  #setValueOrThrow = (row: number, column: number, value: number): void => {
+    this.#grid.setOrThrow(row, column, value);
+    this.#drawCallback(row, column, value);
+  };
+
+  #toppleAtCoordinate = (row: number, column: number): Set<string> => {
     const cardinalBorderCoordinates = [
       [row - 1, column],
       [row, column + 1],
@@ -140,37 +153,5 @@ export default class CanvasGrid {
     }
 
     return coordinatesRequiringToppling;
-  };
-
-  toppleAtCoordinates = (coordinates: Set<string>): Set<string> => {
-    let coordinatesRequiringToppling = new Set<string>();
-    const coordinateNums = [...coordinates].map((c) => {
-      const split = c.split(',');
-      const row = parseInt(split[0]!, 10);
-      const column = parseInt(split[1]!, 10);
-      return { row, column };
-    });
-
-    for (const { row, column } of coordinateNums) {
-      coordinatesRequiringToppling = new Set([
-        ...coordinatesRequiringToppling,
-        ...this.toppleAtCoordinate(row, column),
-      ]);
-    }
-
-    return coordinatesRequiringToppling;
-  };
-
-  reset = (row: number, column: number) => {
-    this.setValueOrThrow(row, column, 0);
-  };
-
-  maybeResize = (newRadius: number) => this.#grid.maybeResize(newRadius);
-
-  getValueOrThrow = (row: number, column: number): number => this.#grid.getOrThrow(row, column);
-
-  private setValueOrThrow = (row: number, column: number, value: number): void => {
-    this.#grid.setOrThrow(row, column, value);
-    this.#drawCallback(row, column, value);
   };
 }

@@ -8,6 +8,9 @@ describe('Canvas', () => {
   let canvasEl: HTMLCanvasElement;
 
   beforeEach(() => {
+    // @ts-expect-error: need getContext to return _something_ in jsdom.
+    vi.spyOn(window.HTMLCanvasElement.prototype, 'getContext').mockReturnValue({});
+
     canvasEl = document.createElement('canvas');
     canvasEl.id = 'canvas';
     document.body.appendChild(canvasEl);
@@ -20,8 +23,6 @@ describe('Canvas', () => {
   it('Should initialize a basic Canvas object', () => {
     const canvas = new Canvas('#canvas', 800);
 
-    // https://github.com/jsdom/jsdom#canvas-support
-    // https://www.npmjs.com/package/canvas
     expect(canvas.context).toBeDefined();
 
     expect(canvas.element).toBe(canvasEl);

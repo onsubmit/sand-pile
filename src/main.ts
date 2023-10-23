@@ -225,8 +225,8 @@ function loop() {
 
   ++numIterations;
 
-  const toppled = grid.toppleOnceOverGrid();
-  if (!toppled) {
+  const { didTopple } = grid.toppleOnceOverGrid();
+  if (!didTopple) {
     stop.click();
     console.log(`Num iterations: ${numIterations}`);
     return;
