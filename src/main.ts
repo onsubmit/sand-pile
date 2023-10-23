@@ -9,13 +9,14 @@ import {
   exampleCheckerboard,
   exampleCircle,
   exampleFill,
+  exampleMandelbrot,
   exampleRandom,
   start,
   stepAll,
   stepOnce,
   stop,
 } from './elements';
-import { drawCheckerboard, drawCircle, drawRandomly, fill } from './examples';
+import { drawCheckerboard, drawCircle, drawMandelbrot, drawRandomly, fill } from './examples';
 
 const radius = new InputNumberTypeObserver('#radius', onRadiusChange);
 const toppleThreshold = new InputNumberTypeObserver('#toppleThreshold', onToppleThresholdChange);
@@ -97,6 +98,10 @@ function setupExampleEvents() {
 
   exampleCheckerboard.onclick = () => {
     grid.drawExample(drawCheckerboard(maxCellGrains.value));
+  };
+
+  exampleMandelbrot.onclick = () => {
+    grid.drawExample(drawMandelbrot(maxCellGrains.value));
   };
 
   exampleRandom.onclick = () => {

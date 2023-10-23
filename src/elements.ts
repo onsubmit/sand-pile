@@ -6,4 +6,5 @@ export const download = document.querySelector<HTMLButtonElement>('#download')!;
 export const exampleCircle = document.querySelector<HTMLButtonElement>('#exampleCircle')!;
 export const exampleFill = document.querySelector<HTMLButtonElement>('#exampleFill')!;
 export const exampleCheckerboard = document.querySelector<HTMLButtonElement>('#exampleCheckerboard')!;
+export const exampleMandelbrot = document.querySelector<HTMLButtonElement>('#exampleMandelbrot')!;
 export const exampleRandom = document.querySelector<HTMLButtonElement>('#exampleRandom')!;
