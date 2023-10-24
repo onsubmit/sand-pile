@@ -1,32 +1,39 @@
 export default class Complex {
   #real: number;
-  #imag: number;
+  #imaginary: number;
 
-  constructor(real: number, imag: number) {
+  #realSquared: number;
+  #imaginarySquared: number;
+
+  constructor(real: number, imaginary: number) {
     this.#real = real;
-    this.#imag = imag;
+    this.#imaginary = imaginary;
+
+    this.#realSquared = real * real;
+    this.#imaginarySquared = imaginary * imaginary;
+  }
+
+  get real(): number {
+    return this.#real;
+  }
+
+  get imaginary(): number {
+    return this.#imaginary;
   }
 
   get magnitude() {
-    return Math.sqrt(this.#real * this.#real + this.#imag * this.#imag);
-  }
-
-  toCoords() {
-    return {
-      x: this.#real,
-      y: this.#imag,
-    };
+    return Math.sqrt(this.#realSquared + this.#imaginarySquared);
   }
 
   static add = (a: Complex, b: Complex) => {
     const real = a.#real + b.#real;
-    const imag = a.#imag + b.#imag;
+    const imag = a.#imaginary + b.#imaginary;
     return new Complex(real, imag);
   };
 
   static multiply = (a: Complex, b: Complex) => {
-    const real = a.#real * b.#real - a.#imag * b.#imag;
-    const imag = a.#real * b.#imag + a.#imag * b.#real;
+    const real = a.#real * b.#real - a.#imaginary * b.#imaginary;
+    const imag = a.#real * b.#imaginary + a.#imaginary * b.#real;
     return new Complex(real, imag);
   };
 }
