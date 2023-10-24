@@ -7,4 +7,5 @@ export const exampleCircle = document.querySelector<HTMLButtonElement>('#example
 export const exampleFill = document.querySelector<HTMLButtonElement>('#exampleFill')!;
 export const exampleCheckerboard = document.querySelector<HTMLButtonElement>('#exampleCheckerboard')!;
 export const exampleMandelbrot = document.querySelector<HTMLButtonElement>('#exampleMandelbrot')!;
+export const examplePolygon = document.querySelector<HTMLButtonElement>('#examplePolygon')!;
 export const exampleRandom = document.querySelector<HTMLButtonElement>('#exampleRandom')!;

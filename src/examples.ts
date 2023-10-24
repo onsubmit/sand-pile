@@ -1,3 +1,4 @@
+import { CartesianCoordinate } from './canvas';
 import { DrawExampleFn } from './canvasGrid';
 import Complex from './complex';
 
@@ -83,5 +84,38 @@ export const drawMandelbrot = (maxValue: number): DrawExampleFn => {
     const m = mandelbrot(c);
 
     return Math.floor(maxValue * (m / maxMandelbrotIterations));
+  };
+};
+
+export const drawPolygon = (numSides: number, maxValue: number): DrawExampleFn => {
+  const piDivSides = Math.PI / numSides;
+  const twoPiDivSides = 2 * piDivSides;
+  const adjustment = numSides % 2 === 0 ? piDivSides : -Math.PI / 2;
+
+  const polygon: Array<CartesianCoordinate> = [];
+  for (let i = 0; i < numSides; i++) {
+    polygon.push({ x: Math.cos(adjustment + i * twoPiDivSides), y: Math.sin(adjustment + i * twoPiDivSides) });
+  }
+
+  // https://stackoverflow.com/a/17490923
+  function pointIsInPolygon(p: CartesianCoordinate) {
+    let isInside = false;
+
+    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+      const p_i = polygon[i]!;
+      const p_j = polygon[j]!;
+      if (p_i.y > p.y !== p_j.y > p.y && p.x < ((p_j.x - p_i.x) * (p.y - p_i.y)) / (p_j.y - p_i.y) + p_i.x) {
+        isInside = !isInside;
+      }
+    }
+
+    return isInside;
+  }
+
+  return (row: number, column: number, gridRadius: number) => {
+    const x = column / gridRadius;
+    const y = row / gridRadius;
+
+    return pointIsInPolygon({ x, y }) ? maxValue : 0;
   };
 };

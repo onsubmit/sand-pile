@@ -59,7 +59,7 @@ body {
   align-items: center;
 }
 
-.config input {
+input {
   width: 40px;
 }
 
@@ -68,6 +68,16 @@ body {
   flex-direction: column;
   gap: 6px;
   padding: 6px;
+}
+
+.polygon {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.polygon button {
+  flex-grow: 1;
 }
 
 .controls {

@@ -1,4 +1,4 @@
-export type CanvasCoordinates = { x: number; y: number };
+export type CartesianCoordinate = { x: number; y: number };
 
 export default class Canvas {
   #canvas: HTMLCanvasElement;

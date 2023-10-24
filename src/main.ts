@@ -1,6 +1,6 @@
 import './style.css';
 
-import Canvas, { CanvasCoordinates } from './canvas';
+import Canvas, { CartesianCoordinate } from './canvas';
 import CanvasGrid, { GridCoordinates } from './canvasGrid';
 import { blend, hexToRgb } from './color';
 import { InputNumberTypeObserver, InputTextTypeObserver } from './elementObserver';
@@ -10,13 +10,14 @@ import {
   exampleCircle,
   exampleFill,
   exampleMandelbrot,
+  examplePolygon,
   exampleRandom,
   start,
   stepAll,
   stepOnce,
   stop,
 } from './elements';
-import { drawCheckerboard, drawCircle, drawMandelbrot, drawRandomly, fill } from './examples';
+import { drawCheckerboard, drawCircle, drawMandelbrot, drawPolygon, drawRandomly, fill } from './examples';
 
 const radius = new InputNumberTypeObserver('#radius', onRadiusChange);
 const toppleThreshold = new InputNumberTypeObserver('#toppleThreshold', onToppleThresholdChange);
@@ -26,8 +27,9 @@ const cellColor = new InputTextTypeObserver('#cellColor', onCellColorChange);
 const cellBackgroundColor = new InputTextTypeObserver('#cellBackgroundColor', onCellBackgroundColorChange);
 const penSize = new InputNumberTypeObserver('#penSize');
 const penWeight = new InputNumberTypeObserver('#penWeight');
+const examplePolygonSides = new InputNumberTypeObserver('#examplePolygonSides');
 
-const lastDrawnCell: Partial<CanvasCoordinates> = {};
+const lastDrawnCell: Partial<CartesianCoordinate> = {};
 const mouseState = {
   isMouseDown: false,
   isMiddleClick: false,
@@ -104,6 +106,10 @@ function setupExampleEvents() {
     grid.drawExample(drawMandelbrot(maxCellGrains.value));
   };
 
+  examplePolygon.onclick = () => {
+    grid.drawExample(drawPolygon(examplePolygonSides.value, maxCellGrains.value));
+  };
+
   exampleRandom.onclick = () => {
     grid.drawExample(drawRandomly(maxCellGrains.value));
   };
@@ -135,21 +141,21 @@ function redraw(newRadius: number) {
   }
 }
 
-function mapCanvasCoordinatesToGridCoordinates(canvasCoordinates: CanvasCoordinates): GridCoordinates {
+function mapCanvasCoordinatesToGridCoordinates(canvasCoordinates: CartesianCoordinate): GridCoordinates {
   const row = -grid.radius + canvasCoordinates.y / cellSize.value;
   const column = -grid.radius + canvasCoordinates.x / cellSize.value;
 
   return { row, column };
 }
 
-function mapGridCoordinatesToCanvasCoordinates(gridCoordinates: GridCoordinates): CanvasCoordinates {
+function mapGridCoordinatesToCanvasCoordinates(gridCoordinates: GridCoordinates): CartesianCoordinate {
   const x = (grid.radius + gridCoordinates.column) * cellSize.value;
   const y = (grid.radius + gridCoordinates.row) * cellSize.value;
 
   return { x, y };
 }
 
-function constrainCanvasCoordinates(canvasCoordinates: CanvasCoordinates): CanvasCoordinates {
+function constrainCanvasCoordinates(canvasCoordinates: CartesianCoordinate): CartesianCoordinate {
   let { x, y } = canvasCoordinates;
 
   x = Math.max(x, 0);
@@ -179,7 +185,7 @@ function getRangesForPenSize(gridCoordinates: GridCoordinates): { min: GridCoord
   };
 }
 
-function drawAtMouse(input: { canvasCoordinates: CanvasCoordinates; increment: boolean; force: boolean }) {
+function drawAtMouse(input: { canvasCoordinates: CartesianCoordinate; increment: boolean; force: boolean }) {
   const { canvasCoordinates, increment, force } = input;
   const { x, y } = constrainCanvasCoordinates(canvasCoordinates);
 
@@ -211,7 +217,7 @@ function drawAtMouse(input: { canvasCoordinates: CanvasCoordinates; increment: b
   }
 }
 
-function clearAtMouse(canvasCoordinates: CanvasCoordinates) {
+function clearAtMouse(canvasCoordinates: CartesianCoordinate) {
   const { x, y } = constrainCanvasCoordinates(canvasCoordinates);
   const { row, column } = mapCanvasCoordinatesToGridCoordinates({ x, y });
   const { min, max } = getRangesForPenSize({ row, column });
