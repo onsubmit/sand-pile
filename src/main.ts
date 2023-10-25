@@ -3,6 +3,7 @@ import './style.css';
 import Canvas, { CartesianCoordinate } from './canvas';
 import CanvasGrid, { GridCoordinates } from './canvasGrid';
 import { blend, hexToRgb } from './color';
+import Config from './config';
 import { InputNumberTypeObserver, InputTextTypeObserver } from './elementObserver';
 import {
   download,
@@ -10,14 +11,15 @@ import {
   exampleCircle,
   exampleFill,
   exampleMandelbrot,
+  exampleNoise,
   examplePolygon,
-  exampleRandom,
+  shareConfig,
   start,
   stepAll,
   stepOnce,
   stop,
 } from './elements';
-import { drawCheckerboard, drawCircle, drawMandelbrot, drawPolygon, drawRandomly, fill } from './examples';
+import { drawCheckerboard, drawCircle, drawMandelbrot, drawPolygon, drawRandomly as drawNoise, fill } from './examples';
 
 const radius = new InputNumberTypeObserver('#radius', onRadiusChange);
 const toppleThreshold = new InputNumberTypeObserver('#toppleThreshold', onToppleThresholdChange);
@@ -28,6 +30,11 @@ const cellBackgroundColor = new InputTextTypeObserver('#cellBackgroundColor', on
 const penSize = new InputNumberTypeObserver('#penSize');
 const penWeight = new InputNumberTypeObserver('#penWeight');
 const examplePolygonSides = new InputNumberTypeObserver('#examplePolygonSides');
+const searchParams = new URLSearchParams(window.location.search);
+
+const params = Object.fromEntries(searchParams);
+const config = new Config(params);
+setupConfig();
 
 const lastDrawnCell: Partial<CartesianCoordinate> = {};
 const mouseState = {
@@ -51,6 +58,7 @@ const canvas = getCanvas();
 
 setupControlEvents();
 setupExampleEvents();
+drawDefaultExample();
 
 function setupControlEvents() {
   start.onclick = () => {
@@ -87,31 +95,59 @@ function setupControlEvents() {
     link.href = canvas.element.toDataURL();
     link.click();
   };
+
+  shareConfig.onclick = () => {
+    const parts = [
+      `radius=${radius.value}`,
+      `toppleThreshold=${toppleThreshold.value}`,
+      `maxCellGrains=${maxCellGrains.value}`,
+      `cellSize=${cellSize.value}`,
+      `penSize=${penSize.value}`,
+      `penWeight=${penWeight.value}`,
+      `polygonSides=${examplePolygonSides.value}`,
+      `cellColor=${cellColor.value.substring(1)}`,
+      `cellBackgroundColor=${cellBackgroundColor.value.substring(1)}`,
+    ];
+
+    if (config.defaultExample) {
+      parts.push(`example=${config.defaultExample}`);
+    }
+
+    const url = `${window.location.href.split('?')[0]}?${parts.join('&')}`;
+    navigator.clipboard.writeText(url);
+    alert(`Copied to clipboard: ${url}`);
+  };
 }
 
 function setupExampleEvents() {
   exampleCircle.onclick = () => {
     grid.drawExample(drawCircle(grid.radius, maxCellGrains.value));
+    config.defaultExample = 'circle';
   };
 
   exampleFill.onclick = () => {
     grid.drawExample(fill(maxCellGrains.value));
+    config.defaultExample = 'fill';
   };
 
   exampleCheckerboard.onclick = () => {
     grid.drawExample(drawCheckerboard(maxCellGrains.value));
+    config.defaultExample = 'checkerboard';
   };
 
   exampleMandelbrot.onclick = () => {
     grid.drawExample(drawMandelbrot(maxCellGrains.value));
+    config.defaultExample = 'mandelbrot';
   };
 
   examplePolygon.onclick = () => {
     grid.drawExample(drawPolygon(examplePolygonSides.value, maxCellGrains.value));
+    config.defaultExample = 'polygon';
   };
 
-  exampleRandom.onclick = () => {
-    grid.drawExample(drawRandomly(maxCellGrains.value));
+  exampleNoise.onclick = () => {
+    grid.drawExample(drawNoise(maxCellGrains.value));
+    config.defaultExample = 'noise';
   };
 }
 
@@ -321,4 +357,58 @@ function getCanvas() {
   canvas.element.oncontextmenu = () => false;
 
   return canvas;
+}
+
+function setupConfig() {
+  radius.min = config.radius.min;
+  radius.max = config.radius.max;
+  radius.value = config.radius.value;
+
+  toppleThreshold.min = config.toppleThreshold.min;
+  toppleThreshold.max = config.toppleThreshold.max;
+  toppleThreshold.value = config.toppleThreshold.value;
+
+  maxCellGrains.min = config.maxCellGrains.min;
+  maxCellGrains.max = config.maxCellGrains.max;
+  maxCellGrains.value = config.maxCellGrains.value;
+
+  cellSize.min = config.cellSize.min;
+  cellSize.max = config.cellSize.max;
+  cellSize.value = config.cellSize.value;
+
+  penSize.min = config.penSize.min;
+  penSize.max = config.penSize.max;
+  penSize.value = config.penSize.value;
+
+  penWeight.min = config.penWeight.min;
+  penWeight.max = config.penWeight.max;
+  penWeight.value = config.penWeight.value;
+
+  cellColor.value = config.cellColor;
+  cellBackgroundColor.value = config.cellBackgroundColor;
+
+  examplePolygonSides.min = config.polygonSides.min;
+  examplePolygonSides.max = config.polygonSides.max;
+  examplePolygonSides.value = config.polygonSides.value;
+}
+
+function drawDefaultExample() {
+  if (!config.defaultExample) {
+    return;
+  }
+
+  switch (config.defaultExample) {
+    case 'circle':
+      return exampleCircle.click();
+    case 'fill':
+      return exampleFill.click();
+    case 'checkerboard':
+      return exampleCheckerboard.click();
+    case 'mandelbrot':
+      return exampleMandelbrot.click();
+    case 'polygon':
+      return examplePolygon.click();
+    case 'noise':
+      return exampleNoise.click();
+  }
 }

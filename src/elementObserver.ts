@@ -62,6 +62,14 @@ export class InputNumberTypeObserver extends ElementObserver<HTMLInputElement, n
     super(selector, getValueOfInputNumberType, setValueOfInputNumberType, onChange);
   }
 
+  get min(): number {
+    return parseInt(this.element.min, 10);
+  }
+
+  set min(value: number) {
+    this.element.min = `${value}`;
+  }
+
   get max(): number {
     return parseInt(this.element.max, 10);
   }

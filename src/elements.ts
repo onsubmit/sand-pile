@@ -1,3 +1,4 @@
+export const shareConfig = document.querySelector<HTMLButtonElement>('#shareConfig')!;
 export const start = document.querySelector<HTMLButtonElement>('#start')!;
 export const stop = document.querySelector<HTMLButtonElement>('#stop')!;
 export const stepOnce = document.querySelector<HTMLButtonElement>('#stepOnce')!;
@@ -8,4 +9,4 @@ export const exampleFill = document.querySelector<HTMLButtonElement>('#exampleFi
 export const exampleCheckerboard = document.querySelector<HTMLButtonElement>('#exampleCheckerboard')!;
 export const exampleMandelbrot = document.querySelector<HTMLButtonElement>('#exampleMandelbrot')!;
 export const examplePolygon = document.querySelector<HTMLButtonElement>('#examplePolygon')!;
-export const exampleRandom = document.querySelector<HTMLButtonElement>('#exampleRandom')!;
+export const exampleNoise = document.querySelector<HTMLButtonElement>('#exampleNoise')!;
