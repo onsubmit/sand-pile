@@ -26,6 +26,11 @@ body {
   align-items: center;
 }
 
+h3 {
+  margin-top: 0;
+  margin-bottom: 4px;
+}
+
 .main {
   display: flex;
   flex-grow: 0;
@@ -44,6 +49,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  padding: 6px;
 }
 
 .config label {
@@ -85,6 +91,13 @@ input {
   flex-direction: row;
   gap: 6px;
   padding: 6px;
+}
+
+.stats {
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 button {

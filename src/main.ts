@@ -1,5 +1,7 @@
 import './style.css';
 
+import Chart from 'chart.js/auto';
+
 import Canvas, { CartesianCoordinate } from './canvas';
 import CanvasGrid, { GridCoordinates } from './canvasGrid';
 import { blend, hexToRgb } from './color';
@@ -13,11 +15,13 @@ import {
   exampleMandelbrot,
   exampleNoise,
   examplePolygon,
+  iterations,
   shareConfig,
   start,
   stepAll,
   stepOnce,
   stop,
+  totalSand,
 } from './elements';
 import { drawCheckerboard, drawCircle, drawMandelbrot, drawPolygon, drawRandomly as drawNoise, fill } from './examples';
 
@@ -45,8 +49,10 @@ const mouseState = {
 
 let startAnimation = false;
 let numIterations = 0;
+let tallestPileSeen = maxCellGrains.value;
 let cellColorRgb = hexToRgb(cellColor.value);
 let cellBackgroundColorRgb = hexToRgb(cellBackgroundColor.value);
+let chart: Chart<'bar', number[], number>;
 
 const grid = new CanvasGrid({
   radius: radius.value,
@@ -83,10 +89,12 @@ function setupControlEvents() {
 
   stepOnce.onclick = () => {
     grid.toppleOnce();
+    drawStatsChart();
   };
 
   stepAll.onclick = () => {
     grid.toppleOnceOverGrid();
+    drawStatsChart();
   };
 
   download.onclick = () => {
@@ -123,31 +131,43 @@ function setupExampleEvents() {
   exampleCircle.onclick = () => {
     grid.drawExample(drawCircle(grid.radius, maxCellGrains.value));
     config.defaultExample = 'circle';
+    drawStatsChart();
+    getTotalSand();
   };
 
   exampleFill.onclick = () => {
     grid.drawExample(fill(maxCellGrains.value));
     config.defaultExample = 'fill';
+    drawStatsChart();
+    getTotalSand();
   };
 
   exampleCheckerboard.onclick = () => {
     grid.drawExample(drawCheckerboard(maxCellGrains.value));
     config.defaultExample = 'checkerboard';
+    drawStatsChart();
+    getTotalSand();
   };
 
   exampleMandelbrot.onclick = () => {
     grid.drawExample(drawMandelbrot(maxCellGrains.value));
     config.defaultExample = 'mandelbrot';
+    drawStatsChart();
+    getTotalSand();
   };
 
   examplePolygon.onclick = () => {
     grid.drawExample(drawPolygon(examplePolygonSides.value, maxCellGrains.value));
     config.defaultExample = 'polygon';
+    drawStatsChart();
+    getTotalSand();
   };
 
   exampleNoise.onclick = () => {
     grid.drawExample(drawNoise(maxCellGrains.value));
     config.defaultExample = 'noise';
+    drawStatsChart();
+    getTotalSand();
   };
 }
 
@@ -251,6 +271,8 @@ function drawAtMouse(input: { canvasCoordinates: CartesianCoordinate; increment:
       }
     }
   }
+
+  getTotalSand();
 }
 
 function clearAtMouse(canvasCoordinates: CartesianCoordinate) {
@@ -263,6 +285,8 @@ function clearAtMouse(canvasCoordinates: CartesianCoordinate) {
       grid.reset(r, c);
     }
   }
+
+  getTotalSand();
 }
 
 function loop() {
@@ -270,9 +294,11 @@ function loop() {
     return;
   }
 
-  ++numIterations;
+  iterations.innerText = `${++numIterations}`;
 
   const { didTopple } = grid.toppleOnceOverGrid();
+  drawStatsChart();
+
   if (!didTopple) {
     stop.click();
     console.log(`Num iterations: ${numIterations}`);
@@ -411,4 +437,41 @@ function drawDefaultExample() {
     case 'noise':
       return exampleNoise.click();
   }
+}
+
+function getTotalSand() {
+  totalSand.innerText = `${grid.getTotalSand()}`;
+}
+
+function drawStatsChart() {
+  const stats = grid.getPileSizeStats(tallestPileSeen);
+  tallestPileSeen = stats.size;
+  const data = [...stats.values()].map((s, i) => {
+    return { sand: i + 1, count: s };
+  });
+
+  chart?.destroy();
+  chart = new Chart('chart', {
+    type: 'bar',
+    options: {
+      animation: false,
+      plugins: {
+        tooltip: {
+          enabled: true,
+        },
+      },
+    },
+    data: {
+      labels: data.map((x) => x.sand),
+      datasets: [
+        {
+          label: '# cells by pile size',
+          data: data.map((x) => x.count),
+          backgroundColor: data.map((x) => blend(cellBackgroundColorRgb, cellColorRgb, x.sand / toppleThreshold.value)),
+          borderColor: cellColor.value,
+          borderWidth: 1,
+        },
+      ],
+    },
+  });
 }

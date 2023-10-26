@@ -10,3 +10,5 @@ export const exampleCheckerboard = document.querySelector<HTMLButtonElement>('#e
 export const exampleMandelbrot = document.querySelector<HTMLButtonElement>('#exampleMandelbrot')!;
 export const examplePolygon = document.querySelector<HTMLButtonElement>('#examplePolygon')!;
 export const exampleNoise = document.querySelector<HTMLButtonElement>('#exampleNoise')!;
+export const iterations = document.querySelector<HTMLSpanElement>('#iterations')!;
+export const totalSand = document.querySelector<HTMLSpanElement>('#totalSand')!;

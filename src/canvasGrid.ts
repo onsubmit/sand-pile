@@ -38,6 +38,44 @@ export default class CanvasGrid {
     this.#toppleThreshold = value;
   }
 
+  getTotalSand = () => {
+    let totalSand = 0;
+    for (let row = -this.radius; row <= this.radius; row++) {
+      for (let column = -this.radius; column <= this.radius; column++) {
+        const value = this.#grid.getOrThrow(row, column);
+        totalSand += value;
+      }
+    }
+
+    return totalSand;
+  };
+
+  getPileSizeStats = (minLength: number) => {
+    const stats = new Map<number, number>(
+      Array(minLength)
+        .fill(0)
+        .map((_x, i) => [i + 1, 0])
+    );
+
+    for (let row = -this.radius; row <= this.radius; row++) {
+      for (let column = -this.radius; column <= this.radius; column++) {
+        const value = this.#grid.getOrThrow(row, column);
+        if (!value) {
+          continue;
+        }
+
+        const current = stats.get(value);
+        if (!current) {
+          stats.set(value, 1);
+        } else {
+          stats.set(value, current + 1);
+        }
+      }
+    }
+
+    return stats;
+  };
+
   redraw = () => {
     for (let row = -this.radius; row <= this.radius; row++) {
       for (let column = -this.radius; column <= this.radius; column++) {
